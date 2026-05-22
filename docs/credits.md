@@ -8,4 +8,4 @@
 
 ## Guilherme Souza ()
 
-## Paulo Ravazzano ()
+## Paulo Ravazzano ([Johannesgauss](https://github.com/Johannesgauss))

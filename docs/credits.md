@@ -6,6 +6,6 @@
 
 - Organização e administração do repositório
 
-## Guilherme Souza ()
+## Guilherme Souza d'Afonseca ([GuiSouza1309](https://github.com/GuiSouza1309))
 
 ## Paulo Ravazzano ([Johannesgauss](https://github.com/Johannesgauss))

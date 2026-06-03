@@ -70,7 +70,7 @@ RESET:
     ; 7. Initialize state variables
     ldi temp, 4
     sts RAM_NUM_PLAYERS, temp ; Default to 4 players
-    ldi fsm_state, STATE_NUM_PLAYERS ; Start with player count selector
+    ldi fsm_state, STATE_WELCOME ; Start with welcome screen
     ldi active_plyr, 1     ; Start with Player 1
     ldi sys_flags, 0
 
@@ -155,8 +155,14 @@ CHECK_STATE_7:
 
 CHECK_STATE_8:
     cpi fsm_state, STATE_NUM_PLAYERS
-    brne MAIN_LOOP
+    brne CHECK_STATE_9
     rcall Run_Num_Players
+    rjmp MAIN_LOOP
+
+CHECK_STATE_9:
+    cpi fsm_state, STATE_WELCOME
+    brne MAIN_LOOP
+    rcall Run_Welcome
     rjmp MAIN_LOOP
 
 ; Driver and Game Logic Inclusions

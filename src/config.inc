@@ -96,3 +96,4 @@
 .equ STATE_EN_PRISON    = 6
 .equ STATE_SET_CREDITS  = 7
 .equ STATE_NUM_PLAYERS  = 8
+.equ STATE_WELCOME      = 9

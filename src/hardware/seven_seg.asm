@@ -15,8 +15,10 @@ TIMER0_ISR:
     push ZL
     push ZH
 
-    ; 1. Check if we are in STATE_NUM_PLAYERS for soft PWM and display animation
+    ; 1. Check if we are in STATE_NUM_PLAYERS or STATE_WELCOME for soft PWM and display animation
     cpi r20, STATE_NUM_PLAYERS
+    breq isr_players_sel
+    cpi r20, STATE_WELCOME
     breq isr_players_sel
     rjmp isr_normal_seg
 

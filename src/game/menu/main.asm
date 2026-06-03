@@ -134,5 +134,6 @@ print_bal_label_msg:
 ; Submodule Inclusions
 .include "game/menu/credits.asm"
 .include "game/menu/players_sel.asm"
+.include "game/menu/welcome.asm"
 .include "game/menu/strings.asm"
 

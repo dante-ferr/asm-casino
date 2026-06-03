@@ -14,7 +14,7 @@ target_strings_table:
     .dw msg_tgt_high * 2
 
 msg_tgt_red:    .db "VERMELHO", 0, 0
-msg_tgt_black:  .db "PRETO", 0
+msg_tgt_black:  .db "AZUL", 0
 msg_tgt_even:   .db "PAR", 0
 msg_tgt_odd:    .db "IMPAR", 0
 msg_tgt_low:    .db "BAIXO", 0

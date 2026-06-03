@@ -116,24 +116,52 @@ CHECK_STATE_6:
 ; FSM State Execution Subroutines (Stubs)
 
 Run_Main_Menu:
+    rcall LCD_Clear
     ldi temp, 0
     ldi temp2, 0
     rcall LCD_Set_Cursor
-
-    ldi ZL, low(msg_welcome * 2)
-    ldi ZH, high(msg_welcome * 2)
+    ldi ZL, low(msg_press_btn * 2)
+    ldi ZH, high(msg_press_btn * 2)
     rcall LCD_Print_Msg
 
     ldi temp, 1
-    ldi temp2, 1
+    ldi temp2, 0
     rcall LCD_Set_Cursor
-
-    ldi ZL, low(msg_press_select * 2)
-    ldi ZH, high(msg_press_select * 2)
+    ldi ZL, low(msg_btn_prefix * 2)
+    ldi ZH, high(msg_btn_prefix * 2)
     rcall LCD_Print_Msg
 
-test_halt:
-    rjmp test_halt
+test_button_loop:
+    rcall Wait_Button_Press
+    push temp
+
+    ldi temp, 1
+    ldi temp2, 7
+    rcall LCD_Set_Cursor
+
+    pop temp
+    cpi temp, 1
+    brne check_btn_b
+    ldi ZL, low(msg_btn_a * 2)
+    ldi ZH, high(msg_btn_a * 2)
+    rcall LCD_Print_Msg
+    rjmp test_button_loop
+
+check_btn_b:
+    cpi temp, 2
+    brne check_btn_select
+    ldi ZL, low(msg_btn_b * 2)
+    ldi ZH, high(msg_btn_b * 2)
+    rcall LCD_Print_Msg
+    rjmp test_button_loop
+
+check_btn_select:
+    cpi temp, 3
+    brne test_button_loop
+    ldi ZL, low(msg_btn_sel * 2)
+    ldi ZH, high(msg_btn_sel * 2)
+    rcall LCD_Print_Msg
+    rjmp test_button_loop
 
 Run_Choose_Cat:
     ; TODO: Choose bet category
@@ -171,5 +199,8 @@ Run_En_Prison:
 .include "game/players.asm"
 
 ; Flash Text Messages
-msg_welcome:      .db "Roleta Francesa", 0
-msg_press_select: .db "Aperte Select", 0
+msg_press_btn:    .db "Aperte um botao", 0
+msg_btn_prefix:   .db "Botao: ", 0
+msg_btn_a:        .db "A      ", 0
+msg_btn_b:        .db "B      ", 0
+msg_btn_sel:      .db "Select ", 0

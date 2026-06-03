@@ -164,15 +164,6 @@ update_active_plyr:
     ; Update 7-segment display to show active player ID (01-04)
     sts RAM_ROUND_NUM, active_plyr
     
-    ; Map player ID to matrix ball index (player_id - 1)
-    mov temp2, active_plyr
-    dec temp2
-    sts RAM_BALL_IDX, temp2
-    
-    ; Render matrix frame
-    ldi temp, 0x80
-    rcall Matrix_Render_Frame
-    
     ; Update RGB LED color to match player ID
     mov temp, active_plyr
     rcall RGB_Set_By_Number
@@ -424,6 +415,11 @@ Show_Player_Menu:
     push ZL
     push ZH
     
+    ; Draw avatar icon on LED matrix
+    ldi ZL, low(icon_avatar * 2)
+    ldi ZH, high(icon_avatar * 2)
+    rcall Matrix_Draw_Icon
+    
     rcall LCD_Clear
     
     ; Line 0: "P[ID] Bal: [Value]"
@@ -545,6 +541,11 @@ Show_Credits_Menu:
     push ZL
     push ZH
     
+    ; Draw dollar sign icon on LED matrix
+    ldi ZL, low(icon_dollar * 2)
+    ldi ZH, high(icon_dollar * 2)
+    rcall Matrix_Draw_Icon
+    
     rcall LCD_Clear
     
     ; Line 0: "P[ID] Set Bal: [Val]"
@@ -583,7 +584,10 @@ Show_Credits_Menu:
     ret
 
 Run_Choose_Cat:
-    ; TODO: Choose bet category
+    ; Draw question mark icon on LED matrix
+    ldi ZL, low(icon_question * 2)
+    ldi ZH, high(icon_question * 2)
+    rcall Matrix_Draw_Icon
     ret
 
 Run_Choose_Bet:

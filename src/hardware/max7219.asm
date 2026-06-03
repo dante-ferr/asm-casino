@@ -202,3 +202,45 @@ border_table:
     .db 7, 0x02, 8, 0x04, 8, 0x08, 8, 0x10, 8, 0x20, 7, 0x40
     ; Left column
     .db 6, 0x80, 5, 0x80, 4, 0x80, 3, 0x80
+
+; Draw a static 8x8 icon on the LED matrix from Flash
+; Inputs:
+;   ZH:ZL = Flash address of the 8-byte icon data (multiplied by 2)
+Matrix_Draw_Icon:
+    push temp
+    push r20
+    push XL
+    push XH
+    push ZL
+    push ZH
+    
+    ldi XL, low(RAM_SCREEN_BUF)
+    ldi XH, high(RAM_SCREEN_BUF)
+    ldi r20, 8                  ; 8 rows to copy
+copy_icon_loop:
+    lpm temp, Z+                ; load byte from Flash and post-increment Z
+    st X+, temp                 ; store byte to SRAM and post-increment X
+    dec r20
+    brne copy_icon_loop
+    
+    ; Write SRAM buffer to MAX7219
+    rcall Matrix_Refresh
+    
+    pop ZH
+    pop ZL
+    pop XH
+    pop XL
+    pop r20
+    pop temp
+    ret
+
+; 8x8 Icon Definitions (8 bytes each)
+icon_avatar:
+    .db 0x18, 0x3C, 0x3C, 0x18, 0x3C, 0x7E, 0x7E, 0x00
+    
+icon_dollar:
+    .db 0x10, 0x3C, 0x50, 0x38, 0x14, 0x3C, 0x10, 0x10
+    
+icon_question:
+    .db 0x3C, 0x42, 0x02, 0x04, 0x08, 0x08, 0x00, 0x08
+

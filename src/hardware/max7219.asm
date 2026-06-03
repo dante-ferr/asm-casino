@@ -190,53 +190,6 @@ skip_ball:
     pop temp
     ret
 
-; Spin animation with simulated friction deceleration and static central diamond
-Matrix_Spin_Animation:
-    push temp
-    push temp2
-    push r20
-    push r22
-    
-    rcall Matrix_Clear
-    
-    ldi r20, 0              ; ball index (0-19)
-    ldi r22, 10             ; initial delay in ms
-    ldi r25, 80             ; total animation steps
-spin_loop:
-    ; Render frame with static central diamond (0x80) and ball (r20)
-    ldi temp, 0x80
-    mov temp2, r20
-    rcall Matrix_Render_Frame
-    
-    ; Advance ball clockwise
-    inc r20
-    cpi r20, 20
-    brlo spin_cont
-    ldi r20, 0              ; wrap around to 0
-spin_cont:
-
-    ; Friction delay
-    mov temp, r22
-    rcall delay_ms
-    
-    ; Slowly increase delay every 4 steps
-    mov temp, r25
-    andi temp, 0x03
-    brne delay_no_inc
-    subi r22, -4            ; add 4ms to delay
-delay_no_inc:
-    
-    dec r25
-    brne spin_loop
-    
-    ; Clear matrix after finishing animation
-    rcall Matrix_Clear
-    
-    pop r22
-    pop r20
-    pop temp2
-    pop temp
-    ret
 
 ; Coordinate table for the 20 LEDs around the circular border of the 8x8 matrix
 ; Format: Row (1-8), Column bitmask

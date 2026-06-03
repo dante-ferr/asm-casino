@@ -63,6 +63,10 @@ RESET:
     ldi temp, (1 << ADEN) | (1 << ADPS2) | (1 << ADPS1) | (1 << ADPS0)
     sts ADCSRA, temp
 
+    ; 6b. Configure Timer 1 for PRNG entropy (runs at full 16MHz clock)
+    ldi temp, (1 << CS10)
+    sts TCCR1B, temp
+
     ; 7. Initialize state variables
     ldi fsm_state, STATE_MAIN_MENU
     ldi active_plyr, 1     ; Start with Player 1
@@ -167,6 +171,9 @@ update_idx_a:
     ldi temp, 0x80
     rcall Matrix_Render_Frame
 
+    ; Play button tick sound
+    rcall Buzzer_Tick
+
     ldi ZL, low(msg_btn_a * 2)
     ldi ZH, high(msg_btn_a * 2)
     rcall LCD_Print_Msg
@@ -191,6 +198,9 @@ update_idx_b:
     ldi temp, 0x80
     rcall Matrix_Render_Frame
 
+    ; Play button tick sound
+    rcall Buzzer_Tick
+
     ldi ZL, low(msg_btn_b * 2)
     ldi ZH, high(msg_btn_b * 2)
     rcall LCD_Print_Msg
@@ -199,6 +209,9 @@ update_idx_b:
 check_btn_select:
     cpi temp, 3            ; Button Select -> Run spin animation
     brne test_button_loop
+
+    ; Confirmation beep
+    rcall Buzzer_Beep
 
     ; Print spinning message
     rcall LCD_Clear
@@ -209,15 +222,8 @@ check_btn_select:
     ldi ZH, high(msg_spinning * 2)
     rcall LCD_Print_Msg
 
-    rcall Matrix_Spin_Animation
-    
-    ; Reset index to 0 and redraw initial state
-    ldi temp2, 0
-    sts RAM_BALL_IDX, temp2
-    sts RAM_ROUND_NUM, temp2
-    
-    ldi temp, 0x80
-    rcall Matrix_Render_Frame
+    ; Run modular roulette spin sequence
+    rcall Run_Roulette_Spin_Sequence
     
     ; Restore static UI
     rcall LCD_Clear
@@ -277,6 +283,7 @@ Run_En_Prison:
 .include "game/prng.asm"
 .include "game/roulette_rules.asm"
 .include "game/players.asm"
+.include "game/roulette_spin.asm"
 
 ; Flash Text Messages
 msg_press_btn:    .db "Aperte um botao", 0

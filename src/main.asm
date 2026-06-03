@@ -33,9 +33,10 @@ RESET:
     sbi PORTB, DISP_DEC
     sbi PORTB, DISP_UNI
 
-    ; 3. Initialize LCD
+    ; 3. Initialize LCD and LED Matrix
     rcall LCD_Init
     rcall LCD_Clear
+    rcall Matrix_Init
 
     ; 4. Initialize player data in SRAM
     rcall Players_Init
@@ -67,9 +68,15 @@ RESET:
     ldi active_plyr, 1     ; Start with Player 1
     ldi sys_flags, 0
 
-    ; Clear display value
+    ; Clear display and ball index values
     ldi temp, 0
     sts RAM_ROUND_NUM, temp
+    sts RAM_BALL_IDX, temp
+
+    ; Draw initial matrix state (static diamond, ball at index 0)
+    ldi temp, 0x80         ; static diamond in the center
+    ldi temp2, 0           ; ball at index 0
+    rcall Matrix_Render_Frame
 
     ; Enable global interrupts
     sei
@@ -144,16 +151,21 @@ test_button_loop:
     rcall LCD_Set_Cursor
 
     pop temp
-    cpi temp, 1            ; Button A -> Increment RAM_ROUND_NUM
+    cpi temp, 1            ; Button A -> Increment index and move ball
     brne check_btn_b
     
-    lds temp2, RAM_ROUND_NUM
+    lds temp2, RAM_BALL_IDX
     inc temp2
-    cpi temp2, 37
-    brlo update_num_a
+    cpi temp2, 20
+    brlo update_idx_a
     ldi temp2, 0           ; Wrap around to 0
-update_num_a:
-    sts RAM_ROUND_NUM, temp2
+update_idx_a:
+    sts RAM_BALL_IDX, temp2
+    sts RAM_ROUND_NUM, temp2 ; show index on 7-segment display
+    
+    ; Render frame with static diamond (0x80) and new ball index (temp2)
+    ldi temp, 0x80
+    rcall Matrix_Render_Frame
 
     ldi ZL, low(msg_btn_a * 2)
     ldi ZH, high(msg_btn_a * 2)
@@ -161,18 +173,23 @@ update_num_a:
     rjmp test_button_loop
 
 check_btn_b:
-    cpi temp, 2            ; Button B -> Decrement RAM_ROUND_NUM
+    cpi temp, 2            ; Button B -> Decrement index and move ball
     brne check_btn_select
     
-    lds temp2, RAM_ROUND_NUM
+    lds temp2, RAM_BALL_IDX
     tst temp2
-    brne dec_num
-    ldi temp2, 36          ; Wrap around to 36
-    rjmp update_num_b
-dec_num:
+    brne dec_idx
+    ldi temp2, 19          ; Wrap around to 19
+    rjmp update_idx_b
+dec_idx:
     dec temp2
-update_num_b:
+update_idx_b:
+    sts RAM_BALL_IDX, temp2
     sts RAM_ROUND_NUM, temp2
+    
+    ; Render frame with static diamond (0x80) and new ball index (temp2)
+    ldi temp, 0x80
+    rcall Matrix_Render_Frame
 
     ldi ZL, low(msg_btn_b * 2)
     ldi ZH, high(msg_btn_b * 2)
@@ -180,12 +197,47 @@ update_num_b:
     rjmp test_button_loop
 
 check_btn_select:
-    cpi temp, 3            ; Button Select -> Reset to 0
+    cpi temp, 3            ; Button Select -> Run spin animation
     brne test_button_loop
-    
-    ldi temp2, 0
-    sts RAM_ROUND_NUM, temp2
 
+    ; Print spinning message
+    rcall LCD_Clear
+    ldi temp, 0
+    ldi temp2, 0
+    rcall LCD_Set_Cursor
+    ldi ZL, low(msg_spinning * 2)
+    ldi ZH, high(msg_spinning * 2)
+    rcall LCD_Print_Msg
+
+    rcall Matrix_Spin_Animation
+    
+    ; Reset index to 0 and redraw initial state
+    ldi temp2, 0
+    sts RAM_BALL_IDX, temp2
+    sts RAM_ROUND_NUM, temp2
+    
+    ldi temp, 0x80
+    rcall Matrix_Render_Frame
+    
+    ; Restore static UI
+    rcall LCD_Clear
+    ldi temp, 0
+    ldi temp2, 0
+    rcall LCD_Set_Cursor
+    ldi ZL, low(msg_press_btn * 2)
+    ldi ZH, high(msg_press_btn * 2)
+    rcall LCD_Print_Msg
+
+    ldi temp, 1
+    ldi temp2, 0
+    rcall LCD_Set_Cursor
+    ldi ZL, low(msg_btn_prefix * 2)
+    ldi ZH, high(msg_btn_prefix * 2)
+    rcall LCD_Print_Msg
+
+    ldi temp, 1
+    ldi temp2, 7
+    rcall LCD_Set_Cursor
     ldi ZL, low(msg_btn_sel * 2)
     ldi ZH, high(msg_btn_sel * 2)
     rcall LCD_Print_Msg
@@ -232,3 +284,4 @@ msg_btn_prefix:   .db "Botao: ", 0
 msg_btn_a:        .db "A      ", 0
 msg_btn_b:        .db "B      ", 0
 msg_btn_sel:      .db "Select ", 0
+msg_spinning:     .db "Girando roleta.", 0

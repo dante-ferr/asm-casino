@@ -9,6 +9,9 @@ TIMER0_ISR:
     in temp, SREG
     push temp
     push temp2
+    push r23
+    push r24
+    push r25
     push ZL
     push ZH
 
@@ -106,6 +109,9 @@ show_units:
 isr_exit:
     pop ZH
     pop ZL
+    pop r25
+    pop r24
+    pop r23
     pop temp2
     pop temp
     out SREG, temp

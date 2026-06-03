@@ -76,6 +76,8 @@
 .equ RAM_SEED_L    = 0x0146 ; PRNG Seed LSB
 .equ RAM_SEED_H    = 0x0147 ; PRNG Seed MSB
 .equ RAM_SYS_TICKS = 0x0148 ; System millisecond counter (1 byte)
+.equ RAM_BALL_IDX  = 0x0149 ; Ball position index on matrix (1 byte)
+.equ RAM_SCREEN_BUF = 0x014A ; LED matrix screen buffer (8 bytes, 0x014A-0x0151)
 
 ; FSM State Constants
 .equ STATE_MAIN_MENU    = 0

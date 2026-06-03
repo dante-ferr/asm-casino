@@ -72,9 +72,10 @@ RESET:
     ldi active_plyr, 1     ; Start with Player 1
     ldi sys_flags, 0
 
-    ; Clear display and ball index values
-    ldi temp, 0
+    ; Set initial display values matching Player 1 (01)
+    ldi temp, 1
     sts RAM_ROUND_NUM, temp
+    ldi temp, 0
     sts RAM_BALL_IDX, temp
 
     ; Draw initial matrix state (static diamond, ball at index 0)
@@ -82,8 +83,8 @@ RESET:
     ldi temp2, 0           ; ball at index 0
     rcall Matrix_Render_Frame
     
-    ; Initial RGB LED color (Green for number 0)
-    ldi temp, 0
+    ; Initial RGB LED color (Red for number 1)
+    ldi temp, 1
     rcall RGB_Set_By_Number
 
     ; Enable global interrupts
@@ -128,95 +129,68 @@ CHECK_STATE_5:
 
 CHECK_STATE_6:
     cpi fsm_state, STATE_EN_PRISON
-    brne MAIN_LOOP
+    brne CHECK_STATE_7
     rcall Run_En_Prison
+    rjmp MAIN_LOOP
+
+CHECK_STATE_7:
+    cpi fsm_state, STATE_SET_CREDITS
+    brne MAIN_LOOP
+    rcall Run_Set_Credits
     rjmp MAIN_LOOP
 
 ; FSM State Execution Subroutines (Stubs)
 
 Run_Main_Menu:
-    rcall LCD_Clear
-    ldi temp, 0
-    ldi temp2, 0
-    rcall LCD_Set_Cursor
-    ldi ZL, low(msg_press_btn * 2)
-    ldi ZH, high(msg_press_btn * 2)
-    rcall LCD_Print_Msg
-
-    ldi temp, 1
-    ldi temp2, 0
-    rcall LCD_Set_Cursor
-    ldi ZL, low(msg_btn_prefix * 2)
-    ldi ZH, high(msg_btn_prefix * 2)
-    rcall LCD_Print_Msg
+    rcall Show_Player_Menu
 
 test_button_loop:
     rcall Wait_Button_Press
     push temp
 
-    ldi temp, 1
-    ldi temp2, 7
-    rcall LCD_Set_Cursor
-
     pop temp
-    cpi temp, 1            ; Button A -> Increment index and move ball
+    cpi temp, 1            ; Button A -> Switch active player
     brne check_btn_b
     
-    lds temp2, RAM_BALL_IDX
+    ; Cycle player ID (1 -> 2 -> 3 -> 4 -> 1)
+    mov temp2, active_plyr
     inc temp2
-    cpi temp2, 20
-    brlo update_idx_a
-    ldi temp2, 0           ; Wrap around to 0
-update_idx_a:
-    sts RAM_BALL_IDX, temp2
-    sts RAM_ROUND_NUM, temp2 ; show index on 7-segment display
+    cpi temp2, 5
+    brlo update_active_plyr
+    ldi temp2, 1
+update_active_plyr:
+    mov active_plyr, temp2
     
-    ; Render frame with static diamond (0x80) and new ball index (temp2)
+    ; Update 7-segment display to show active player ID (01-04)
+    sts RAM_ROUND_NUM, active_plyr
+    
+    ; Map player ID to matrix ball index (player_id - 1)
+    mov temp2, active_plyr
+    dec temp2
+    sts RAM_BALL_IDX, temp2
+    
+    ; Render matrix frame
     ldi temp, 0x80
     rcall Matrix_Render_Frame
-
-    ; Update RGB LED color to match display number
-    mov temp, temp2
+    
+    ; Update RGB LED color to match player ID
+    mov temp, active_plyr
     rcall RGB_Set_By_Number
-
-    ; Play button tick sound
+    
+    ; Play click sound
     rcall Buzzer_Tick
-
-    ldi ZL, low(msg_btn_a * 2)
-    ldi ZH, high(msg_btn_a * 2)
-    rcall LCD_Print_Msg
+    
+    ; Refresh LCD display
+    rcall Show_Player_Menu
     rjmp test_button_loop
 
 check_btn_b:
-    cpi temp, 2            ; Button B -> Decrement index and move ball
+    cpi temp, 2            ; Button B -> Enter credit setting screen
     brne check_btn_select
     
-    lds temp2, RAM_BALL_IDX
-    tst temp2
-    brne dec_idx
-    ldi temp2, 19          ; Wrap around to 19
-    rjmp update_idx_b
-dec_idx:
-    dec temp2
-update_idx_b:
-    sts RAM_BALL_IDX, temp2
-    sts RAM_ROUND_NUM, temp2
-    
-    ; Render frame with static diamond (0x80) and new ball index (temp2)
-    ldi temp, 0x80
-    rcall Matrix_Render_Frame
-
-    ; Update RGB LED color to match display number
-    mov temp, temp2
-    rcall RGB_Set_By_Number
-
-    ; Play button tick sound
-    rcall Buzzer_Tick
-
-    ldi ZL, low(msg_btn_b * 2)
-    ldi ZH, high(msg_btn_b * 2)
-    rcall LCD_Print_Msg
-    rjmp test_button_loop
+    ; Switch FSM state and exit Run_Main_Menu
+    ldi fsm_state, STATE_SET_CREDITS
+    ret
 
 check_btn_select:
     cpi temp, 3            ; Button Select -> Run spin animation
@@ -262,29 +236,175 @@ check_btn_select:
     ldi temp, 250
     rcall delay_ms
     
-    ; Restore static UI (displays and RGB LED stay active representing the number)
+    ; Restore player values on displays
+    sts RAM_ROUND_NUM, active_plyr
+    mov temp2, active_plyr
+    dec temp2
+    sts RAM_BALL_IDX, temp2
+    
+    ; Render matrix frame
+    ldi temp, 0x80
+    rcall Matrix_Render_Frame
+    
+    ; Update RGB LED color to match player ID
+    mov temp, active_plyr
+    rcall RGB_Set_By_Number
+    
+    ; Refresh LCD and resume menu
+    rcall Show_Player_Menu
+    rjmp test_button_loop
+
+; Show player ID and balance on LCD
+Show_Player_Menu:
+    push temp
+    push temp2
+    push r24
+    push r25
+    push ZL
+    push ZH
+    
     rcall LCD_Clear
+    
+    ; Line 0: "P[ID] Bal: [Value]"
     ldi temp, 0
     ldi temp2, 0
     rcall LCD_Set_Cursor
-    ldi ZL, low(msg_press_btn * 2)
-    ldi ZH, high(msg_press_btn * 2)
+    
+    ldi temp, 'P'
+    rcall lcd_write_data
+    
+    mov temp, active_plyr
+    subi temp, -'0'
+    rcall lcd_write_data
+    
+    ldi ZL, low(msg_bal_label * 2)
+    ldi ZH, high(msg_bal_label * 2)
     rcall LCD_Print_Msg
-
+    
+    rcall Player_Get_Balance ; returns balance in r25:r24
+    rcall LCD_Print_Dec16
+    
+    ; Line 1: "A:Mudar B:+100 S:Gira"
     ldi temp, 1
     ldi temp2, 0
     rcall LCD_Set_Cursor
-    ldi ZL, low(msg_btn_prefix * 2)
-    ldi ZH, high(msg_btn_prefix * 2)
+    ldi ZL, low(msg_menu_line1 * 2)
+    ldi ZH, high(msg_menu_line1 * 2)
     rcall LCD_Print_Msg
+    
+    pop ZH
+    pop ZL
+    pop r25
+    pop r24
+    pop temp2
+    pop temp
+    ret
 
-    ldi temp, 1
-    ldi temp2, 7
+; FSM State: Set Credits Screen
+Run_Set_Credits:
+    rcall Show_Credits_Menu
+set_credits_loop:
+    rcall Wait_Button_Press
+    push temp
+    
+    pop temp
+    cpi temp, 1            ; Button A -> Add 100 points
+    brne set_credits_b
+    
+    ; Get current balance (r25:r24)
+    rcall Player_Get_Balance
+    
+    ; Check maximum limit (9900 points)
+    cpi r24, low(9900)
+    ldi temp2, high(9900)
+    cpc r25, temp2
+    brsh set_credits_tick   ; Skip addition if already >= 9900
+    
+    ; Add 100 points
+    subi r24, low(-100)
+    sbci r25, high(-100)
+    rcall Player_Set_Balance
+    
+set_credits_tick:
+    rcall Buzzer_Tick
+    rcall Show_Credits_Menu
+    rjmp set_credits_loop
+    
+set_credits_b:
+    cpi temp, 2            ; Button B -> Subtract 100 points
+    brne set_credits_select
+    
+    ; Get current balance (r25:r24)
+    rcall Player_Get_Balance
+    
+    ; Check minimum limit (0 points)
+    cpi r24, 0
+    ldi temp2, 0
+    cpc r25, temp2
+    breq set_credits_tick   ; Skip subtraction if already 0
+    
+    ; Subtract 100 points
+    subi r24, low(100)
+    sbci r25, high(100)
+    rcall Player_Set_Balance
+    rjmp set_credits_tick
+    
+set_credits_select:
+    cpi temp, 3            ; Button Select -> Confirm and return to Main Menu
+    brne set_credits_loop
+    
+    ; Play confirmation beep
+    rcall Buzzer_Beep
+    
+    ; Switch state back to Main Menu
+    ldi fsm_state, STATE_MAIN_MENU
+    ret
+
+; Show player credit configuration screen
+Show_Credits_Menu:
+    push temp
+    push temp2
+    push r24
+    push r25
+    push ZL
+    push ZH
+    
+    rcall LCD_Clear
+    
+    ; Line 0: "P[ID] Set Bal: [Val]"
+    ldi temp, 0
+    ldi temp2, 0
     rcall LCD_Set_Cursor
-    ldi ZL, low(msg_btn_sel * 2)
-    ldi ZH, high(msg_btn_sel * 2)
+    
+    ldi temp, 'P'
+    rcall lcd_write_data
+    
+    mov temp, active_plyr
+    subi temp, -'0'
+    rcall lcd_write_data
+    
+    ldi ZL, low(msg_set_bal_label * 2)
+    ldi ZH, high(msg_set_bal_label * 2)
     rcall LCD_Print_Msg
-    rjmp test_button_loop
+    
+    rcall Player_Get_Balance ; returns balance in r25:r24
+    rcall LCD_Print_Dec16
+    
+    ; Line 1: "A:+100 B:-100 S:OK"
+    ldi temp, 1
+    ldi temp2, 0
+    rcall LCD_Set_Cursor
+    ldi ZL, low(msg_credits_line1 * 2)
+    ldi ZH, high(msg_credits_line1 * 2)
+    rcall LCD_Print_Msg
+    
+    pop ZH
+    pop ZL
+    pop r25
+    pop r24
+    pop temp2
+    pop temp
+    ret
 
 Run_Choose_Cat:
     ; TODO: Choose bet category
@@ -323,9 +443,8 @@ Run_En_Prison:
 .include "game/roulette_spin.asm"
 
 ; Flash Text Messages
-msg_press_btn:    .db "Aperte um botao", 0
-msg_btn_prefix:   .db "Botao: ", 0
-msg_btn_a:        .db "A      ", 0
-msg_btn_b:        .db "B      ", 0
-msg_btn_sel:      .db "Select ", 0
 msg_spinning:     .db "Girando roleta.", 0
+msg_bal_label:    .db " Bal: ", 0, 0
+msg_menu_line1:   .db "A:Mudar B:Cred S:Gira", 0
+msg_set_bal_label:  .db " Set Bal: ", 0, 0
+msg_credits_line1:  .db "A:+100 B:-100 S:OK", 0, 0

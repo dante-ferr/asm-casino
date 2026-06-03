@@ -124,7 +124,10 @@ O programa principal roda em uma FSM que atualiza a tela LCD e gerencia o teclad
 ```mermaid
 stateDiagram-v2
     [*] --> Estado0 : Inicialização
-    Estado0 --> Estado0 : A: Alterna Jogador / B: Histórico
+    Estado0 --> Estado0 : A: Alterna Jogador
+    Estado0 --> Estado7 : B: Configurar Créditos
+    Estado7 --> Estado0 : SELECT (Confirmar Saldo)
+    Estado7 --> Estado7 : A: +100 / B: -100
     Estado0 --> Estado1 : SELECT (Iniciar Bet)
     
     Estado1 --> Estado0 : A (Voltar)
@@ -144,13 +147,14 @@ stateDiagram-v2
 ```
 
 ### Estados Lógicos:
-*   **Estado 0 (Idle / Painel Principal)**: Mostra pontos do jogador e sua última aposta.
+*   **Estado 0 (Idle / Painel Principal)**: Mostra pontos do jogador e sua última aposta. Permite alternar o jogador ativo (A) ou configurar seus créditos (B).
 *   **Estado 1 (Seleção de Categoria)**: Permite escolher entre aposta *Internal* (número exato) ou *External* (dinheiro par/grupos).
 *   **Estado 2 (Seleção Específica)**: Define o número (0 a 36) ou a categoria externa (Vermelho, Preto, Par, Ímpar, Alto, Baixo).
 *   **Estado 3 (Confirmação)**: Aguarda confirmação com botão B (Spin) ou cancelamento com botão A.
 *   **Estado 4 (Spin / Animação)**: Move o ponto luminoso na matriz 8x8 e pisca displays rapidamente. Emite feedback sonoro a cada passo ($T_{step}$ acumulado por fricção).
 *   **Estado 5 (Resolução)**: Calcula ganhos e perdas, atualiza o saldo na SRAM e acende o LED RGB com a cor do número vencedor.
 *   **Estado 6 (En Prison)**: Exibe tela com aposta aprisionada e restringe as opções de jogo até que o jogador resolva a aposta em um novo giro de roleta.
+*   **Estado 7 (Configurar Crédito)**: Permite ajustar (adicionar/reduzir) o saldo inicial do jogador selecionado antes do jogo em passos de 100 pontos.
 
 ---
 

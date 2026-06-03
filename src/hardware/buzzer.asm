@@ -68,25 +68,30 @@ Buzzer_Failure:
 Buzzer_Play_Tone:
     push temp
     push temp2
-    push r20
-    push r21
+    push r18
+    push r19
     
-    mov r20, temp           ; r20 = half-period delay
-    mov r21, temp2          ; r21 = toggle cycle counter
+    sbi DDRD, BUZZER_PIN    ; Set buzzer pin as output
+    
+    mov r18, temp           ; r18 = half-period delay
+    mov r19, temp2          ; r19 = toggle cycle counter
 buzzer_tone_loop:
     sbi PORTD, BUZZER_PIN   ; PD4 = 1
-    mov temp, r20
+    mov temp, r18
     rcall buzzer_delay_loop
     
     cbi PORTD, BUZZER_PIN   ; PD4 = 0
-    mov temp, r20
+    mov temp, r18
     rcall buzzer_delay_loop
     
-    dec r21
+    dec r19
     brne buzzer_tone_loop
     
-    pop r21
-    pop r20
+    cbi DDRD, BUZZER_PIN    ; Restore buzzer pin as input
+    cbi PORTD, BUZZER_PIN   ; Ensure pull-up is disabled
+    
+    pop r19
+    pop r18
     pop temp2
     pop temp
     ret

@@ -79,6 +79,12 @@
 .equ RAM_BALL_IDX  = 0x0149 ; Ball position index on matrix (1 byte)
 .equ RAM_SCREEN_BUF = 0x014A ; LED matrix screen buffer (8 bytes, 0x014A-0x0151)
 .equ RAM_NUM_PLAYERS = 0x0152 ; Number of active players (1 byte)
+.equ RAM_PWM_COUNTER = 0x0153 ; Software PWM counter (1 byte)
+.equ RAM_PWM_RED     = 0x0154 ; Red duty cycle (0 to 7)
+.equ RAM_PWM_GREEN   = 0x0155 ; Green duty cycle (0 to 7)
+.equ RAM_PWM_BLACK   = 0x0156 ; Blue duty cycle (0 to 7)
+.equ RAM_PWM_TICK    = 0x0157 ; Fade tick counter (1 byte)
+.equ RAM_FADE_STATE  = 0x0158 ; Fade state (0, 1, 2)
 
 ; FSM State Constants
 .equ STATE_MAIN_MENU    = 0

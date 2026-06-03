@@ -8,6 +8,13 @@ Show_Betting_Screen:
     push ZL
     push ZH
     
+    ; Update 7-segment display to show current player ID
+    sts RAM_ROUND_NUM, active_plyr
+    
+    ; Update RGB LED color to match current player ID
+    mov temp, active_plyr
+    rcall RGB_Set_By_Player
+    
     rcall LCD_Clear
     
     ; 1. Draw question mark icon on matrix

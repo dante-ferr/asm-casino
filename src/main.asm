@@ -22,7 +22,7 @@ RESET:
     out DDRB, temp
     
     ; PORTD: PD1-PD3 (RGB), PD4 (Buzzer), PD5-PD7 (Segments)
-    ldi temp, 0b11111110   ; PD1-PD7 set as output (PD0 RX/TX free)
+    ldi temp, 0b11101110   ; PD1-PD3 output, PD5-PD7 output. PD4 (Buzzer) is input. (PD0 RX/TX free)
     out DDRD, temp
 
     ; PORTC: PC1-PC3 (Matrix outputs), PC4-PC5 (I2C), PC0 (ADC input)
@@ -74,6 +74,18 @@ RESET:
     ldi active_plyr, 1     ; Start with Player 1
     ldi sys_flags, 0
 
+    ; 7b. Initialize soft PWM and fading variables
+    ldi temp, 0
+    sts RAM_PWM_COUNTER, temp
+    sts RAM_PWM_TICK, temp
+    sts RAM_FADE_STATE, temp
+    sts RAM_PWM_GREEN, temp
+    sts RAM_PWM_BLACK, temp
+    ldi temp, 7
+    sts RAM_PWM_RED, temp     ; Red starts at max
+    ldi temp, 0
+    sts RAM_ROUND_NUM, temp   ; Start animation at frame 0
+
     ; Set initial display values matching Player 1 (01)
     ldi temp, 1
     sts RAM_ROUND_NUM, temp
@@ -85,9 +97,9 @@ RESET:
     ldi temp2, 0           ; ball at index 0
     rcall Matrix_Render_Frame
     
-    ; Initial RGB LED color (Red for number 1)
+    ; Initial RGB LED color (matching Player 1)
     ldi temp, 1
-    rcall RGB_Set_By_Number
+    rcall RGB_Set_By_Player
 
     ; Enable global interrupts
     sei

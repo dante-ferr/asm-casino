@@ -27,7 +27,7 @@ update_active_plyr:
     
     ; Update RGB LED color to match player ID
     mov temp, active_plyr
-    rcall RGB_Set_By_Number
+    rcall RGB_Set_By_Player
     
     ; Play click sound
     rcall Buzzer_Tick
@@ -64,6 +64,13 @@ Show_Player_Menu:
     push r25
     push ZL
     push ZH
+    
+    ; Update 7-segment display to show active player ID
+    sts RAM_ROUND_NUM, active_plyr
+    
+    ; Update RGB LED color to match player ID
+    mov temp, active_plyr
+    rcall RGB_Set_By_Player
     
     ; Draw avatar icon on LED matrix
     ldi ZL, low(icon_avatar * 2)

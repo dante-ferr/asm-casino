@@ -67,6 +67,10 @@ RESET:
     ldi active_plyr, 1     ; Start with Player 1
     ldi sys_flags, 0
 
+    ; Clear display value
+    ldi temp, 0
+    sts RAM_ROUND_NUM, temp
+
     ; Enable global interrupts
     sei
 
@@ -140,24 +144,48 @@ test_button_loop:
     rcall LCD_Set_Cursor
 
     pop temp
-    cpi temp, 1
+    cpi temp, 1            ; Button A -> Increment RAM_ROUND_NUM
     brne check_btn_b
+    
+    lds temp2, RAM_ROUND_NUM
+    inc temp2
+    cpi temp2, 37
+    brlo update_num_a
+    ldi temp2, 0           ; Wrap around to 0
+update_num_a:
+    sts RAM_ROUND_NUM, temp2
+
     ldi ZL, low(msg_btn_a * 2)
     ldi ZH, high(msg_btn_a * 2)
     rcall LCD_Print_Msg
     rjmp test_button_loop
 
 check_btn_b:
-    cpi temp, 2
+    cpi temp, 2            ; Button B -> Decrement RAM_ROUND_NUM
     brne check_btn_select
+    
+    lds temp2, RAM_ROUND_NUM
+    tst temp2
+    brne dec_num
+    ldi temp2, 36          ; Wrap around to 36
+    rjmp update_num_b
+dec_num:
+    dec temp2
+update_num_b:
+    sts RAM_ROUND_NUM, temp2
+
     ldi ZL, low(msg_btn_b * 2)
     ldi ZH, high(msg_btn_b * 2)
     rcall LCD_Print_Msg
     rjmp test_button_loop
 
 check_btn_select:
-    cpi temp, 3
+    cpi temp, 3            ; Button Select -> Reset to 0
     brne test_button_loop
+    
+    ldi temp2, 0
+    sts RAM_ROUND_NUM, temp2
+
     ldi ZL, low(msg_btn_sel * 2)
     ldi ZH, high(msg_btn_sel * 2)
     rcall LCD_Print_Msg

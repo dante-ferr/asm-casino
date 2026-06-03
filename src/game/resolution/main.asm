@@ -200,7 +200,9 @@ resolution_show_balance:
     
     ; Loop to next player
     inc active_plyr
-    cpi active_plyr, 5
+    lds temp, RAM_NUM_PLAYERS
+    inc temp
+    cp active_plyr, temp
     brlo resolution_plyr_loop_jmp
     rjmp resolution_finished
     

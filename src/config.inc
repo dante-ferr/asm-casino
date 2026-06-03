@@ -78,6 +78,7 @@
 .equ RAM_SYS_TICKS = 0x0148 ; System millisecond counter (1 byte)
 .equ RAM_BALL_IDX  = 0x0149 ; Ball position index on matrix (1 byte)
 .equ RAM_SCREEN_BUF = 0x014A ; LED matrix screen buffer (8 bytes, 0x014A-0x0151)
+.equ RAM_NUM_PLAYERS = 0x0152 ; Number of active players (1 byte)
 
 ; FSM State Constants
 .equ STATE_MAIN_MENU    = 0
@@ -88,3 +89,4 @@
 .equ STATE_RESOLUTION   = 5
 .equ STATE_EN_PRISON    = 6
 .equ STATE_SET_CREDITS  = 7
+.equ STATE_NUM_PLAYERS  = 8

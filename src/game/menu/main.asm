@@ -11,10 +11,12 @@ test_button_loop:
     cpi temp, 1            ; Button A -> Switch active player
     brne check_btn_b
     
-    ; Cycle player ID (1 -> 2 -> 3 -> 4 -> 1)
+; Cycle player ID (1 -> 2 -> ... -> RAM_NUM_PLAYERS -> 1)
     mov temp2, active_plyr
     inc temp2
-    cpi temp2, 5
+    lds temp, RAM_NUM_PLAYERS
+    inc temp
+    cp temp2, temp
     brlo update_active_plyr
     ldi temp2, 1
 update_active_plyr:
@@ -85,9 +87,11 @@ Show_Player_Menu:
     ; Check if active player is in prison
     rcall Player_Get_Pointer
     ldd temp, Z+2           ; Z+2 = status byte
-    sbrs temp, 0            ; Skip printing indicator if not in prison (bit 0 is 0)
+    sbrc temp, 0            ; Skip printing indicator if not in prison (bit 0 is 0)
+    rjmp print_prison_indicator
     rjmp print_bal_label_msg
     
+print_prison_indicator:
     ; Print prison indicator
     ldi temp, '('
     rcall lcd_write_data
@@ -122,4 +126,6 @@ print_bal_label_msg:
 
 ; Submodule Inclusions
 .include "game/menu/credits.asm"
+.include "game/menu/players_sel.asm"
 .include "game/menu/strings.asm"
+

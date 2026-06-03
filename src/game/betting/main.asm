@@ -204,7 +204,9 @@ betting_phase_tick:
 betting_phase_next_player:
     ; Move to next player
     inc active_plyr
-    cpi active_plyr, 5
+    lds temp, RAM_NUM_PLAYERS
+    inc temp
+    cp active_plyr, temp
     brsh betting_phase_done
     
     ; Go to next player's betting screen

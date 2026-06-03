@@ -68,7 +68,9 @@ RESET:
     sts TCCR1B, temp
 
     ; 7. Initialize state variables
-    ldi fsm_state, STATE_MAIN_MENU
+    ldi temp, 4
+    sts RAM_NUM_PLAYERS, temp ; Default to 4 players
+    ldi fsm_state, STATE_NUM_PLAYERS ; Start with player count selector
     ldi active_plyr, 1     ; Start with Player 1
     ldi sys_flags, 0
 
@@ -135,8 +137,14 @@ CHECK_STATE_6:
 
 CHECK_STATE_7:
     cpi fsm_state, STATE_SET_CREDITS
-    brne MAIN_LOOP
+    brne CHECK_STATE_8
     rcall Run_Set_Credits
+    rjmp MAIN_LOOP
+
+CHECK_STATE_8:
+    cpi fsm_state, STATE_NUM_PLAYERS
+    brne MAIN_LOOP
+    rcall Run_Num_Players
     rjmp MAIN_LOOP
 
 ; Driver and Game Logic Inclusions

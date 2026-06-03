@@ -97,23 +97,19 @@ Cada jogador ativo (limite de 4 jogadores) terá um bloco fixo de RAM de 16 byte
 +---------------------+-------------------+-----------------+
 | Offset 0x04         | Alvo da Aposta    | N° ou Categoria |
 +---------------------+-------------------+-----------------+
-| Offset 0x05 - 0x06  | Aposta Aprision.  | Pontos Presos   |
+| Offset 0x05 - 0x06  | Valor da Aposta   | 16-bit Integer  |
 +---------------------+-------------------+-----------------+
-| Offset 0x07         | Tipo Aprisionado  | Tipo de Aposta  |
+| Offset 0x07 - 0x0B  | Histórico Local   | 5 últimos giros |
 +---------------------+-------------------+-----------------+
-| Offset 0x08         | Alvo Aprisionado  | Categoria       |
-+---------------------+-------------------+-----------------+
-| Offset 0x09 - 0x0D  | Histórico Local   | 5 últimos giros |
-+---------------------+-------------------+-----------------+
-| Offset 0x0E - 0x0F  | Reservado         | Padding         |
+| Offset 0x0C - 0x0F  | Reservado         | Padding         |
 +---------------------+-------------------+-----------------+
 ```
 
 ### Detalhes das Variáveis Globais de Jogo:
-*   `ACTIVE_PLAYER`: Armazena o jogador atual ($1$ a $4$).
-*   `CURRENT_STATE`: Guarda o estado lógico da FSM.
-*   `ROUND_NUMBER`: Armazena o número sorteado (0 a 36).
-*   `TMR1_SEED`: Armazena a semente de 16 bits capturada do temporizador `TCNT1`.
+*   `ACTIVE_PLAYER`: Armazena o jogador atual ($1$ a $4$, mapeado no registrador `active_plyr` / `r21`).
+*   `CURRENT_STATE`: Guarda o estado lógico da FSM (mapeado no registrador `fsm_state` / `r20`).
+*   `ROUND_NUMBER`: Armazena o número sorteado (0 a 36, mapeado em `RAM_ROUND_NUM`).
+*   `TMR1_SEED`: Armazena a semente de 16 bits capturada do temporizador (mapeado em `RAM_SEED_H:RAM_SEED_L`).
 
 ---
 

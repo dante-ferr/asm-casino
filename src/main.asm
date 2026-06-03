@@ -193,28 +193,189 @@ check_btn_b:
     ret
 
 check_btn_select:
-    cpi temp, 3            ; Button Select -> Run spin animation
+    cpi temp, 3            ; Button Select -> Place test bet and spin!
     brne test_button_loop
 
-    ; Confirmation beep
-    rcall Buzzer_Beep
-
-    ; Print spinning message
+    ; 1. Check if player is already En Prison (imprisoned)
+    rcall Player_Get_Pointer ; Z points to player
+    ldd temp, Z+2           ; Get status
+    sbrc temp, 0            ; Skip if NOT En Prison
+    rjmp run_spin_prison     ; If En Prison, skip bet placement & deduction!
+    
+    ; 2. Place a test bet: 100 points on RED (External, target 0)
+    ; Check if player has at least 100 points
+    rcall Player_Get_Balance ; returns balance in r25:r24
+    cpi r24, low(100)
+    ldi temp2, high(100)
+    cpc r25, temp2
+    brsh place_test_bet
+    
+    ; Insufficient balance -> error sound and message
+    rcall Buzzer_Failure
     rcall LCD_Clear
     ldi temp, 0
     ldi temp2, 0
     rcall LCD_Set_Cursor
+    ldi ZL, low(msg_no_balance * 2)
+    ldi ZH, high(msg_no_balance * 2)
+    rcall LCD_Print_Msg
+    
+    ldi temp, 250
+    rcall delay_ms
+    ldi temp, 250
+    rcall delay_ms
+    
+    rcall Show_Player_Menu
+    rjmp test_button_loop
+    
+place_test_bet:
+    ; Deduct 100 points from player balance
+    subi r24, low(100)
+    sbci r25, high(100)
+    rcall Player_Set_Balance
+    
+    ; Set player bet details: External (1), Target RED (0), Value 100 (0x0064)
+    ldi temp, 1             ; External
+    ldi temp2, 0            ; Target RED (0)
+    ldi r25, 0
+    ldi r24, 100            ; 100 points
+    rcall Player_Set_Bet
+    
+run_spin_prison:
+    ; Store current En Prison status in r23 before spin (preserves across call)
+    rcall Player_Get_Pointer
+    ldd r23, Z+2
+    andi r23, 1             ; r23 = 1 if was En Prison, 0 otherwise
+
+    ; Play confirmation beep
+    rcall Buzzer_Beep
+
+    ; Print spinning message on LCD
+    rcall LCD_Clear
+    ldi temp, 0
+    ldi temp2, 0
+    rcall LCD_Set_Cursor
+    
+    tst r23
+    breq show_spinning_normal
+    
+    ldi ZL, low(msg_prison_spin * 2)
+    ldi ZH, high(msg_prison_spin * 2)
+    rcall LCD_Print_Msg
+    rjmp do_spin
+    
+show_spinning_normal:
     ldi ZL, low(msg_spinning * 2)
     ldi ZH, high(msg_spinning * 2)
     rcall LCD_Print_Msg
-
-    ; Run modular roulette spin sequence
+    
+do_spin:
+    ; Run modular roulette spin sequence (returns slot in temp2, handles LED/buzzer)
     rcall Run_Roulette_Spin_Sequence
     
-    ; Play victory melody
-    rcall Buzzer_Success
+    ; 3. Run resolution rules
+    rcall Calculate_Payout
     
-    ; Wait 2.5 seconds to let the user view and hear the result
+    ; 4. Check results and display outcome
+    tst r23                 ; Were we in prison?
+    breq check_normal_payout_outcome
+    
+    ; --- PRISON RESOLUTION OUTCOME ---
+    ; Check if winning number is RED
+    lds r20, RAM_ROUND_NUM
+    ldi temp, 1             ; External
+    ldi temp2, 0            ; Target RED
+    rcall Check_Bet_Win     ; returns temp = 1 (Win) or 0 (Loss)
+    tst temp
+    breq prison_lost_outcome
+    
+    ; Prison Win -> Released!
+    rcall Buzzer_Success
+    rcall LCD_Clear
+    ldi temp, 0
+    ldi temp2, 0
+    rcall LCD_Set_Cursor
+    ldi ZL, low(msg_prison_won * 2)
+    ldi ZH, high(msg_prison_won * 2)
+    rcall LCD_Print_Msg
+    rjmp wait_and_restore_menu
+    
+prison_lost_outcome:
+    rcall Buzzer_Failure
+    rcall LCD_Clear
+    ldi temp, 0
+    ldi temp2, 0
+    rcall LCD_Set_Cursor
+    ldi ZL, low(msg_prison_lost * 2)
+    ldi ZH, high(msg_prison_lost * 2)
+    rcall LCD_Print_Msg
+    rjmp wait_and_restore_menu
+    
+check_normal_payout_outcome:
+    ; Check if player went to prison during this spin
+    rcall Player_Get_Pointer
+    ldd temp, Z+2
+    sbrc temp, 0            ; Skip if En Prison bit is 0
+    rjmp show_prison_outcome
+    
+    ; Check if winning number is RED (win)
+    lds r20, RAM_ROUND_NUM
+    ldi temp, 1             ; External
+    ldi temp2, 0            ; Target RED
+    rcall Check_Bet_Win
+    tst temp
+    breq show_loss_outcome
+    
+    ; Normal Win!
+    rcall Buzzer_Success
+    rcall LCD_Clear
+    ldi temp, 0
+    ldi temp2, 0
+    rcall LCD_Set_Cursor
+    ldi ZL, low(msg_win_payout * 2)
+    ldi ZH, high(msg_win_payout * 2)
+    rcall LCD_Print_Msg
+    rjmp wait_and_restore_menu
+    
+show_loss_outcome:
+    rcall Buzzer_Failure
+    rcall LCD_Clear
+    ldi temp, 0
+    ldi temp2, 0
+    rcall LCD_Set_Cursor
+    ldi ZL, low(msg_loss_payout * 2)
+    ldi ZH, high(msg_loss_payout * 2)
+    rcall LCD_Print_Msg
+    rjmp wait_and_restore_menu
+    
+show_prison_outcome:
+    ; Went to prison!
+    rcall Buzzer_Beep       ; Neutral tone for alert
+    rcall LCD_Clear
+    ldi temp, 0
+    ldi temp2, 0
+    rcall LCD_Set_Cursor
+    ldi ZL, low(msg_prison_payout * 2)
+    ldi ZH, high(msg_prison_payout * 2)
+    rcall LCD_Print_Msg
+    rjmp wait_and_restore_menu
+
+wait_and_restore_menu:
+    ; Show balance on line 1
+    ldi temp, 1
+    ldi temp2, 0
+    rcall LCD_Set_Cursor
+    ldi ZL, low(msg_bal_label * 2)
+    ldi ZH, high(msg_bal_label * 2)
+    rcall LCD_Print_Msg
+    rcall Player_Get_Balance ; returns balance in r25:r24
+    rcall LCD_Print_Dec16
+    
+    ; Wait ~3 seconds for user to view result
+    ldi temp, 250
+    rcall delay_ms
+    ldi temp, 250
+    rcall delay_ms
     ldi temp, 250
     rcall delay_ms
     ldi temp, 250
@@ -277,6 +438,21 @@ Show_Player_Menu:
     subi temp, -'0'
     rcall lcd_write_data
     
+    ; Check if active player is in prison
+    rcall Player_Get_Pointer
+    ldd temp, Z+2           ; Z+2 = status byte
+    sbrs temp, 0            ; Skip printing indicator if not in prison (bit 0 is 0)
+    rjmp print_bal_label_msg
+    
+    ; Print prison indicator
+    ldi temp, '('
+    rcall lcd_write_data
+    ldi temp, 'P'
+    rcall lcd_write_data
+    ldi temp, ')'
+    rcall lcd_write_data
+    
+print_bal_label_msg:
     ldi ZL, low(msg_bal_label * 2)
     ldi ZH, high(msg_bal_label * 2)
     rcall LCD_Print_Msg
@@ -443,8 +619,15 @@ Run_En_Prison:
 .include "game/roulette_spin.asm"
 
 ; Flash Text Messages
-msg_spinning:     .db "Girando roleta.", 0
-msg_bal_label:    .db " Bal: ", 0, 0
-msg_menu_line1:   .db "A:Mudar B:Cred S:Gira", 0
+msg_spinning:       .db "Girando roleta.", 0
+msg_bal_label:      .db " Bal: ", 0, 0
+msg_menu_line1:     .db "A:Mudar B:Cred S:Gira", 0
 msg_set_bal_label:  .db " Set Bal: ", 0, 0
 msg_credits_line1:  .db "A:+100 B:-100 S:OK", 0, 0
+msg_no_balance:     .db "Saldo Insufic.!", 0
+msg_win_payout:     .db "GANHOU! (100pt)", 0
+msg_loss_payout:    .db "PERDEU! (100pt)", 0
+msg_prison_payout:  .db "VAI P/ PRISAO!", 0, 0
+msg_prison_won:     .db "LIBERADO! (+100)", 0, 0
+msg_prison_lost:    .db "PERDIDO! (-100)", 0
+msg_prison_spin:    .db "Giro Prisao...", 0, 0

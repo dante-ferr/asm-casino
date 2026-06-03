@@ -24,6 +24,8 @@ Run_Roulette_Spin_Sequence:
     ldi r23, 74
     add r23, r22            ; r23 = total steps remaining (counter decreases)
     
+    push r22                ; Save rigged winning slot (S_win) to prevent overwrite
+    
     ; 3. Run spin animation loop
     ldi r21, 0              ; r21 = current slot index S (starts at 0)
 spin_anim_loop:
@@ -76,6 +78,8 @@ slot_no_wrap:
     
     dec r23
     brne spin_anim_loop
+    
+    pop r22                 ; Restore winning slot (S_win)
     
     ; 4. Final step: Stop on winning slot
     ; Z already points to winning slot (which corresponds to r22 = S_win)
@@ -151,8 +155,8 @@ div_loop_spin:
     rjmp div_loop_spin
     
 div_done_spin:
-    ; 3. Add offset of +3 to align slot 0 (number 0) straight up at 12 o'clock
-    subi r20, -3
+    ; 3. Add offset of +2 to align slot 0 (number 0) at the 4th column of the top row (LED index 2)
+    subi r20, -2
     
     ; 4. Modulo 20 wrap-around
     cpi r20, 20

@@ -4,7 +4,8 @@
 
 ## Dante Teles Ferreira ([dante-ferr](https://github.com/dante-ferr))
 
-- Organização e administração do repositório
+- Organização e administração do repositório.
+- Organização da lista de materiais e compra de parte deles pelo Mercado Livre.
 
 ## Guilherme Souza d'Afonseca ([GuiSouza1309](https://github.com/GuiSouza1309))
 

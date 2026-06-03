@@ -1,1 +1,7 @@
 .antigravitycli
+planning/progress.md
+src/*.obj
+src/*.eep.hex
+src/*.eep
+src/*.cof
+src/*.lst

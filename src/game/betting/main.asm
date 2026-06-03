@@ -214,8 +214,90 @@ betting_phase_next_player:
     rjmp betting_phase_loop
     
 betting_phase_done:
+    rcall Check_Any_Bets    ; returns temp = 1 (has bets) or 0 (no bets)
+    tst temp
+    brne proceed_to_spin
+    
+    ; ERROR: No bets placed!
+    rcall LCD_Clear
+    ldi temp, 0
+    ldi temp2, 0
+    rcall LCD_Set_Cursor
+    ldi ZL, low(msg_err_no_bets * 2)
+    ldi ZH, high(msg_err_no_bets * 2)
+    rcall LCD_Print_Msg
+    
+    ldi temp, 1
+    ldi temp2, 0
+    rcall LCD_Set_Cursor
+    ldi ZL, low(msg_err_return_menu * 2)
+    ldi ZH, high(msg_err_return_menu * 2)
+    rcall LCD_Print_Msg
+    
+    rcall Buzzer_Failure
+    
+    ; Wait 4.0 seconds (16 iterations of 250ms)
+    ldi temp, 16
+wait_loop_no_bets:
+    push temp
+    ldi temp, 250
+    rcall delay_ms
+    pop temp
+    dec temp
+    brne wait_loop_no_bets
+    
+    ldi active_plyr, 1      ; Reset to player 1
+    ldi fsm_state, STATE_MAIN_MENU ; Return to menu
+    ret
+
+proceed_to_spin:
     ldi active_plyr, 1      ; Reset to player 1
     ldi fsm_state, STATE_SPIN_ROULET ; Go to spin!
+    ret
+
+; Helper: Checks if at least one active player has a non-zero bet
+; Outputs: temp = 1 (has bets), 0 (no bets)
+Check_Any_Bets:
+    push temp2
+    push r20
+    push r21
+    push ZL
+    push ZH
+    
+    ldi r21, 1              ; Start checking from Player 1
+check_bets_loop:
+    ; Check if r21 > RAM_NUM_PLAYERS
+    lds temp, RAM_NUM_PLAYERS
+    cp temp, r21
+    brlo no_bets_found      ; If RAM_NUM_PLAYERS < r21, we checked all active players
+    
+    ; Temporarily set active_plyr to get pointer
+    push active_plyr
+    mov active_plyr, r21
+    rcall Player_Get_Pointer ; Z points to player
+    pop active_plyr
+    
+    ldd temp, Z+5           ; bet value high
+    ldd temp2, Z+6          ; bet value low
+    or temp, temp2
+    brne bet_found          ; Found a non-zero bet!
+    
+    inc r21
+    rjmp check_bets_loop
+
+bet_found:
+    ldi temp, 1
+    rjmp check_bets_done
+
+no_bets_found:
+    ldi temp, 0
+
+check_bets_done:
+    pop ZH
+    pop ZL
+    pop r21
+    pop r20
+    pop temp2
     ret
 
 betting_phase_prison_handlers:

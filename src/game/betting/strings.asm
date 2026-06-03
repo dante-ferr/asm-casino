@@ -24,3 +24,6 @@ msg_num_prefix:    .db "NUM: ", 0
 msg_conf_prefix:   .db " Conf: ", 0
 msg_conf_sim:      .db "SIM", 0
 msg_conf_voltar:   .db "VOLTAR", 0, 0
+msg_err_no_bets:      .db "Erro: Sem Aposta", 0, 0
+msg_err_return_menu:  .db "Volta p/ Menu...", 0, 0
+

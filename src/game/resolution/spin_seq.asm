@@ -1,5 +1,5 @@
-; Modular Roulette Spin Sequence Controller
-; Handles animation, physical number mapping, display updates, RGB color sync, and buzzer sounds.
+; Modular Roulette Spin Sequence Logic
+; Handles animation steps, LED matrix mapping, friction deceleration, and buzzer sounds.
 
 ; Runs the complete roulette spin sequence
 ; Inputs: None
@@ -82,7 +82,6 @@ slot_no_wrap:
     pop r22                 ; Restore winning slot (S_win)
     
     ; 4. Final step: Stop on winning slot
-    ; Z already points to winning slot (which corresponds to r22 = S_win)
     ldi ZL, low(roulette_wheel_table * 2)
     ldi ZH, high(roulette_wheel_table * 2)
     add ZL, r22

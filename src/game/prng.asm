@@ -1,5 +1,14 @@
-; Pseudo-Random Number Generator (PRNG) using hardware timer
+; Pseudo-Random Number Generator (PRNG) using hardware timer 1
+; Returns a pseudo-random number 0-36 in temp2
 
 PRNG_Spin:
-    ; Generate a pseudo-random number from 0 to 36 using hardware timer 1
+    push temp
+    lds temp2, TCNT1L       ; Read Timer 1 low byte (incrementing at 16MHz)
+prng_mod_loop:
+    cpi temp2, 37
+    brlo prng_mod_done      ; If temp2 < 37, we have our modulo result
+    subi temp2, 37
+    rjmp prng_mod_loop
+prng_mod_done:
+    pop temp
     ret

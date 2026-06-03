@@ -81,6 +81,10 @@ RESET:
     ldi temp, 0x80         ; static diamond in the center
     ldi temp2, 0           ; ball at index 0
     rcall Matrix_Render_Frame
+    
+    ; Initial RGB LED color (Green for number 0)
+    ldi temp, 0
+    rcall RGB_Set_By_Number
 
     ; Enable global interrupts
     sei
@@ -171,6 +175,10 @@ update_idx_a:
     ldi temp, 0x80
     rcall Matrix_Render_Frame
 
+    ; Update RGB LED color to match display number
+    mov temp, temp2
+    rcall RGB_Set_By_Number
+
     ; Play button tick sound
     rcall Buzzer_Tick
 
@@ -197,6 +205,10 @@ update_idx_b:
     ; Render frame with static diamond (0x80) and new ball index (temp2)
     ldi temp, 0x80
     rcall Matrix_Render_Frame
+
+    ; Update RGB LED color to match display number
+    mov temp, temp2
+    rcall RGB_Set_By_Number
 
     ; Play button tick sound
     rcall Buzzer_Tick
@@ -225,7 +237,32 @@ check_btn_select:
     ; Run modular roulette spin sequence
     rcall Run_Roulette_Spin_Sequence
     
-    ; Restore static UI
+    ; Play victory melody
+    rcall Buzzer_Success
+    
+    ; Wait 2.5 seconds to let the user view and hear the result
+    ldi temp, 250
+    rcall delay_ms
+    ldi temp, 250
+    rcall delay_ms
+    ldi temp, 250
+    rcall delay_ms
+    ldi temp, 250
+    rcall delay_ms
+    ldi temp, 250
+    rcall delay_ms
+    ldi temp, 250
+    rcall delay_ms
+    ldi temp, 250
+    rcall delay_ms
+    ldi temp, 250
+    rcall delay_ms
+    ldi temp, 250
+    rcall delay_ms
+    ldi temp, 250
+    rcall delay_ms
+    
+    ; Restore static UI (displays and RGB LED stay active representing the number)
     rcall LCD_Clear
     ldi temp, 0
     ldi temp2, 0

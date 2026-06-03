@@ -15,15 +15,9 @@ Run_Roulette_Spin_Sequence:
     push ZL
     push ZH
     
-    ; 1. Draw a pseudo-random winning slot index (0 to 36) using Timer 1
-    lds r22, TCNT1L
-draw_mod_loop:
-    cpi r22, 37
-    brlo draw_mod_done
-    subi r22, 37
-    rjmp draw_mod_loop
-draw_mod_done:
-    ; r22 now contains the winning slot index S_win (0 to 36)
+    ; 1. Draw a pseudo-random winning slot index (0 to 36) using PRNG
+    rcall PRNG_Spin
+    mov r22, temp2          ; r22 now contains the winning slot index S_win (0 to 36)
     
     ; 2. Determine total steps for animation (at least 2 full loops + S_win)
     ; total steps = 74 + S_win
@@ -107,34 +101,6 @@ slot_no_wrap:
     ; Set winning color on RGB LED
     mov temp, r24
     rcall RGB_Set_By_Number
-    
-    ; Play success melody
-    rcall Buzzer_Success
-    
-    ; Wait 2.5 seconds for user to view the result
-    ldi temp, 250
-    rcall delay_ms
-    ldi temp, 250
-    rcall delay_ms
-    ldi temp, 250
-    rcall delay_ms
-    ldi temp, 250
-    rcall delay_ms
-    ldi temp, 250
-    rcall delay_ms
-    ldi temp, 250
-    rcall delay_ms
-    ldi temp, 250
-    rcall delay_ms
-    ldi temp, 250
-    rcall delay_ms
-    ldi temp, 250
-    rcall delay_ms
-    ldi temp, 250
-    rcall delay_ms
-    
-    ; Turn off RGB LED
-    rcall RGB_Clear
     
     ; Return winning number in temp2
     mov temp2, r24

@@ -12,7 +12,7 @@ welcome_restart_melody:
     rcall Show_Welcome_Screen
     
 welcome_melody_loop:
-    rcall Buzzer_Play_Current_Track
+    call Buzzer_Play_Current_Track
     tst temp
     breq welcome_melody_loop          ; if finished normally, loop/restart it!
     
@@ -22,33 +22,33 @@ welcome_melody_loop:
     
     ; Wait for Select to be released
 wait_select_release:
-    rcall Read_Buttons
+    call Read_Buttons
     tst temp
     brne wait_select_release
 
-    ; Select released -> Toggle track index (0 -> 1 -> 0)
+    ; Select released -> Toggle track index (0 -> 1 -> 2 -> 3 -> 0)
     lds temp2, RAM_CURRENT_TRACK
     inc temp2
-    cpi temp2, 2                      ; 2 tracks
+    cpi temp2, 5                      ; 5 tracks
     brlo save_track
     ldi temp2, 0
 save_track:
     sts RAM_CURRENT_TRACK, temp2
     
     ; Play switch track confirmation sound
-    rcall Buzzer_Beep
+    call Buzzer_Beep
     
     rjmp welcome_restart_melody
-
+ 
 welcome_button_pressed:
     ; Wait for the button to be released
 wait_welcome_release:
-    rcall Read_Buttons
+    call Read_Buttons
     tst temp
     brne wait_welcome_release
 
     ; Play confirmation beep
-    rcall Buzzer_Beep
+    call Buzzer_Beep
     
     ; Transition state to STATE_NUM_PLAYERS
     ldi fsm_state, STATE_NUM_PLAYERS
@@ -67,15 +67,15 @@ Show_Welcome_Screen:
     push ZL
     push ZH
     
-    rcall LCD_Clear
+    call LCD_Clear
     
     ; Line 0: "Roleta Francesa"
     ldi temp, 0
     ldi temp2, 0
-    rcall LCD_Set_Cursor
+    call LCD_Set_Cursor
     ldi ZL, low(msg_welcome_title * 2)
     ldi ZH, high(msg_welcome_title * 2)
-    rcall LCD_Print_Msg
+    call LCD_Print_Msg
     
     pop ZH
     pop ZL

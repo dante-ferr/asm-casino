@@ -179,3 +179,10 @@ CHECK_STATE_9:
 .include "game/menu/main.asm"
 .include "game/betting/main.asm"
 .include "game/resolution/main.asm"
+
+; Music tables placed at the end to prevent code segment bloating and relative address overflows
+.include "game/music/ode_to_joy.asm"
+.include "game/music/minuet_g.asm"
+.include "game/music/tetris.asm"
+.include "game/music/star_wars.asm"
+.include "game/music/mario.asm"

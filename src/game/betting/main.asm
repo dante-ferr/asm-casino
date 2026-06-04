@@ -1,13 +1,13 @@
 ; Game Betting Phase FSM Loops and Handlers
 
 Run_Choose_Cat:
-    rcall Show_Betting_Screen
+    call Show_Betting_Screen
 betting_phase_loop:
-    rcall Wait_Button_Press
+    call Wait_Button_Press
     push temp
     
     ; Check if active player is in prison
-    rcall Player_Get_Pointer
+    call Player_Get_Pointer
     ldd temp, Z+2
     sbrc temp, 0            ; Skip if NOT En Prison
     rjmp betting_phase_prison_handlers
@@ -31,7 +31,7 @@ handle_mode_target:
     cpi temp, 1            ; Button A -> Decrement Target Index (with wrap-around)
     brne target_check_b
     
-    rcall Player_Get_Pointer
+    call Player_Get_Pointer
     ldd temp2, Z+4          ; current selection index
     tst temp2
     brne target_dec_no_wrap
@@ -45,7 +45,7 @@ target_check_b:
     cpi temp, 2            ; Button B -> Increment Target Index (with wrap-around)
     brne target_check_select
     
-    rcall Player_Get_Pointer
+    call Player_Get_Pointer
     ldd temp2, Z+4
     inc temp2
     cpi temp2, NUM_BET_TARGETS
@@ -59,7 +59,7 @@ target_check_select:
     cpi temp, 3            ; Button Select -> Transition to Mode 1 (Edit Value)
     brne target_loop_jmp
     
-    rcall Buzzer_Beep
+    call Buzzer_Beep
     ldi sys_flags, 1        ; Set Mode to 1
     rjmp betting_phase_tick
 
@@ -71,12 +71,12 @@ handle_mode_value:
     brne value_check_b
     
     ; Get player balance in r19:r18 (avoid clobbering sys_flags in r22)
-    rcall Player_Get_Balance ; returns balance in r25:r24
+    call Player_Get_Balance ; returns balance in r25:r24
     mov r18, r24
     mov r19, r25            ; r19:r18 = balance
     
     ; Get current bet value in r25:r24
-    rcall Player_Get_Pointer ; Z points to player
+    call Player_Get_Pointer ; Z points to player
     ldd r25, Z+5
     ldd r24, Z+6            ; r25:r24 = current bet value
     
@@ -101,20 +101,20 @@ handle_mode_value:
     mov r25, r19
     
 value_save_new:
-    rcall Player_Get_Pointer
+    call Player_Get_Pointer
     std Z+5, r25
     std Z+6, r24
     rjmp betting_phase_tick
 
 value_tick_beep:
-    rcall Buzzer_Failure
+    call Buzzer_Failure
     rjmp betting_phase_loop
 
 value_check_b:
     cpi temp, 2            ; Button B -> Decrement Value (-100)
     brne value_check_select
     
-    rcall Player_Get_Pointer
+    call Player_Get_Pointer
     ldd r25, Z+5
     ldd r24, Z+6
     
@@ -129,7 +129,7 @@ value_check_b:
     ldi temp2, high(BET_STEP)
     sbc r25, temp2
     
-    rcall Player_Get_Pointer
+    call Player_Get_Pointer
     std Z+5, r25
     std Z+6, r24
     rjmp betting_phase_tick
@@ -138,7 +138,7 @@ value_check_select:
     cpi temp, 3            ; Button Select -> Transition to Mode 2 (Confirm)
     brne value_loop_jmp
     
-    rcall Buzzer_Beep
+    call Buzzer_Beep
     ldi sys_flags, 2        ; Set Mode to 2 (Confirm, default to SIM)
     rjmp betting_phase_tick
 
@@ -159,14 +159,14 @@ handle_mode_confirm:
     rjmp return_to_target   ; If bit 7 is set, return to Edit Target
     
     ; CONFIRMED!
-    rcall Buzzer_Beep
+    call Buzzer_Beep
     
     ; Map selection index to real bet type/target
-    rcall Player_Get_Pointer
+    call Player_Get_Pointer
     ldd temp, Z+4           ; selection index
-    rcall Map_Selection_To_Bet ; returns type in temp, target in temp2
+    call Map_Selection_To_Bet ; returns type in temp, target in temp2
     
-    rcall Player_Get_Pointer
+    call Player_Get_Pointer
     std Z+3, temp           ; save real bet type
     std Z+4, temp2          ; save real bet target
     
@@ -174,22 +174,22 @@ handle_mode_confirm:
     ldd r19, Z+5
     ldd r18, Z+6            ; r19:r18 = bet value
     
-    rcall Player_Get_Balance ; returns balance in r25:r24
+    call Player_Get_Balance ; returns balance in r25:r24
     sub r24, r18
     sbc r25, r19            ; subtract bet value
-    rcall Player_Set_Balance ; save new balance
+    call Player_Set_Balance ; save new balance
     
     ldi sys_flags, 0        ; Reset mode for next player
     rjmp betting_phase_next_player
     
 toggle_confirm:
-    rcall Buzzer_Tick
+    call Buzzer_Tick
     ldi temp2, 0x80
     eor sys_flags, temp2    ; Toggle bit 7 of sys_flags
     rjmp betting_phase_tick
     
 return_to_target:
-    rcall Buzzer_Beep
+    call Buzzer_Beep
     ldi sys_flags, 0        ; Reset mode to Edit Target
     rjmp betting_phase_tick
 
@@ -197,8 +197,8 @@ confirm_loop_jmp:
     rjmp betting_phase_loop
 
 betting_phase_tick:
-    rcall Buzzer_Tick
-    rcall Show_Betting_Screen
+    call Buzzer_Tick
+    call Show_Betting_Screen
     rjmp betting_phase_loop
 
 betting_phase_next_player:
@@ -210,38 +210,38 @@ betting_phase_next_player:
     brsh betting_phase_done
     
     ; Go to next player's betting screen
-    rcall Show_Betting_Screen
+    call Show_Betting_Screen
     rjmp betting_phase_loop
     
 betting_phase_done:
-    rcall Check_Any_Bets    ; returns temp = 1 (has bets) or 0 (no bets)
+    call Check_Any_Bets    ; returns temp = 1 (has bets) or 0 (no bets)
     tst temp
     brne proceed_to_spin
     
     ; ERROR: No bets placed!
-    rcall LCD_Clear
+    call LCD_Clear
     ldi temp, 0
     ldi temp2, 0
-    rcall LCD_Set_Cursor
+    call LCD_Set_Cursor
     ldi ZL, low(msg_err_no_bets * 2)
     ldi ZH, high(msg_err_no_bets * 2)
-    rcall LCD_Print_Msg
+    call LCD_Print_Msg
     
     ldi temp, 1
     ldi temp2, 0
-    rcall LCD_Set_Cursor
+    call LCD_Set_Cursor
     ldi ZL, low(msg_err_return_menu * 2)
     ldi ZH, high(msg_err_return_menu * 2)
-    rcall LCD_Print_Msg
+    call LCD_Print_Msg
     
-    rcall Buzzer_Failure
+    call Buzzer_Failure
     
     ; Wait 4.0 seconds (16 iterations of 250ms)
     ldi temp, 16
 wait_loop_no_bets:
     push temp
     ldi temp, 250
-    rcall delay_ms
+    call delay_ms
     pop temp
     dec temp
     brne wait_loop_no_bets
@@ -274,7 +274,7 @@ check_bets_loop:
     ; Temporarily set active_plyr to get pointer
     push active_plyr
     mov active_plyr, r21
-    rcall Player_Get_Pointer ; Z points to player
+    call Player_Get_Pointer ; Z points to player
     pop active_plyr
     
     ldd temp, Z+5           ; bet value high
@@ -306,12 +306,12 @@ betting_phase_prison_handlers:
     breq betting_phase_select_prison
     
     ; A or B pressed while in prison -> play error beep and ignore
-    rcall Buzzer_Failure
+    call Buzzer_Failure
     rjmp betting_phase_loop
     
 betting_phase_select_prison:
     ; Confirm prison locked bet and move to next player
-    rcall Buzzer_Beep
+    call Buzzer_Beep
     rjmp betting_phase_next_player
 
 Run_Choose_Bet:

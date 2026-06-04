@@ -85,6 +85,7 @@
 .equ RAM_PWM_BLACK   = 0x0156 ; Blue duty cycle (0 to 7)
 .equ RAM_PWM_TICK    = 0x0157 ; Fade tick counter (1 byte)
 .equ RAM_FADE_STATE  = 0x0158 ; Fade state (0, 1, 2)
+.equ RAM_CURRENT_TRACK = 0x0159 ; Current active music track ID (1 byte)
 
 ; FSM State Constants
 .equ STATE_MAIN_MENU    = 0

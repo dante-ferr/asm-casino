@@ -2,16 +2,16 @@
 
 Run_Spin_Roulette:
     ; 1. Display spinning message
-    rcall LCD_Clear
+    call LCD_Clear
     ldi temp, 0
     ldi temp2, 0
-    rcall LCD_Set_Cursor
+    call LCD_Set_Cursor
     ldi ZL, low(msg_spinning * 2)
     ldi ZH, high(msg_spinning * 2)
-    rcall LCD_Print_Msg
+    call LCD_Print_Msg
     
     ; 2. Run modular spin sequence
-    rcall Run_Roulette_Spin_Sequence ; returns winning number in temp2, saves to RAM_ROUND_NUM
+    call Run_Roulette_Spin_Sequence ; returns winning number in temp2, saves to RAM_ROUND_NUM
     
     ; 3. Transition to resolution
     ldi fsm_state, STATE_RESOLUTION
@@ -27,7 +27,7 @@ Run_Resolution:
     
     ldi active_plyr, 1     ; Start with Player 1
 resolution_plyr_loop:
-    rcall Player_Get_Pointer ; Z points to player
+    call Player_Get_Pointer ; Z points to player
     
     ; Load bet details before Calculate_Payout clears them
     ldd r23, Z+2            ; status
@@ -42,7 +42,7 @@ resolution_plyr_loop:
     push r19
     push r18
     
-    rcall Calculate_Payout  ; Calculates payout, updates balance & status, clears bet
+    call Calculate_Payout  ; Calculates payout, updates balance & status, clears bet
     
     pop r18
     pop r19
@@ -51,18 +51,18 @@ resolution_plyr_loop:
     pop r20
     
     ; 1. Clear LCD
-    rcall LCD_Clear
+    call LCD_Clear
     
     ; 2. Print "P[ID]: " on Line 0
     ldi temp, 0
     ldi temp2, 0
-    rcall LCD_Set_Cursor
+    call LCD_Set_Cursor
     
     ldi temp, 'P'
-    rcall lcd_write_data
+    call lcd_write_data
     mov temp, active_plyr
     subi temp, -'0'
-    rcall lcd_write_data
+    call lcd_write_data
     
     ; Check if bet value was 0
     mov temp, r18
@@ -72,7 +72,7 @@ resolution_plyr_loop:
     ; No bet -> display " PASS"
     ldi ZL, low(msg_p_passed * 2)
     ldi ZH, high(msg_p_passed * 2)
-    rcall LCD_Print_Msg
+    call LCD_Print_Msg
     rjmp resolution_show_balance
     
 resolution_has_bet:
@@ -81,7 +81,7 @@ resolution_has_bet:
     rjmp resolution_was_prison
     
     ; Was NOT in prison -> check if now in prison
-    rcall Player_Get_Pointer
+    call Player_Get_Pointer
     ldd temp, Z+2
     sbrc temp, 0
     rjmp resolution_went_prison
@@ -90,15 +90,15 @@ resolution_has_bet:
     lds r20, RAM_ROUND_NUM
     mov temp, r22           ; type
     mov temp2, r23          ; target
-    rcall Check_Bet_Win     ; returns temp = 1 (Win) or 0 (Loss)
+    call Check_Bet_Win     ; returns temp = 1 (Win) or 0 (Loss)
     tst temp
     breq resolution_normal_loss
     
     ; Normal Win!
-    rcall Buzzer_Success
+    call Buzzer_Success
     ldi ZL, low(msg_p_won_prefix * 2)
     ldi ZH, high(msg_p_won_prefix * 2)
-    rcall LCD_Print_Msg
+    call LCD_Print_Msg
     
     ; Print win amount
     cpi r22, 1              ; External?
@@ -117,29 +117,29 @@ mul_35_loop:
     brne mul_35_loop
     mov r24, r22
     mov r25, r23
-    rcall LCD_Print_Dec16
+    call LCD_Print_Dec16
     rjmp resolution_show_balance
     
 print_ext_win_val:
     mov r24, r18
     mov r25, r19
-    rcall LCD_Print_Dec16
+    call LCD_Print_Dec16
     rjmp resolution_show_balance
     
 resolution_normal_loss:
-    rcall Buzzer_Failure
+    call Buzzer_Failure
     ldi ZL, low(msg_p_lost_prefix * 2)
     ldi ZH, high(msg_p_lost_prefix * 2)
-    rcall LCD_Print_Msg
+    call LCD_Print_Msg
     mov r24, r18
     mov r25, r19
-    rcall LCD_Print_Dec16
+    call LCD_Print_Dec16
     rjmp resolution_show_balance
     
 resolution_went_prison:
     ldi ZL, low(msg_p_went_prison * 2)
     ldi ZH, high(msg_p_went_prison * 2)
-    rcall LCD_Print_Msg
+    call LCD_Print_Msg
     rjmp resolution_show_balance
     
 resolution_was_prison:
@@ -147,45 +147,45 @@ resolution_was_prison:
     lds r20, RAM_ROUND_NUM
     mov temp, r22           ; type
     mov temp2, r23          ; target
-    rcall Check_Bet_Win
+    call Check_Bet_Win
     tst temp
     breq resolution_prison_loss
     
     ; Released!
-    rcall Buzzer_Success
+    call Buzzer_Success
     ldi ZL, low(msg_p_win_ext * 2)
     ldi ZH, high(msg_p_win_ext * 2)
-    rcall LCD_Print_Msg
+    call LCD_Print_Msg
     mov r24, r18
     mov r25, r19
-    rcall LCD_Print_Dec16
+    call LCD_Print_Dec16
     rjmp resolution_show_balance
     
 resolution_prison_loss:
-    rcall Buzzer_Failure
+    call Buzzer_Failure
     ldi ZL, low(msg_p_lost_prison * 2)
     ldi ZH, high(msg_p_lost_prison * 2)
-    rcall LCD_Print_Msg
+    call LCD_Print_Msg
     
 resolution_show_balance:
     ; Line 1: "Novo Bal: [Balance]"
     ldi temp, 1
     ldi temp2, 0
-    rcall LCD_Set_Cursor
+    call LCD_Set_Cursor
     
     ldi ZL, low(msg_novo_bal * 2)
     ldi ZH, high(msg_novo_bal * 2)
-    rcall LCD_Print_Msg
+    call LCD_Print_Msg
     
-    rcall Player_Get_Balance ; returns balance in r25:r24
-    rcall LCD_Print_Dec16
+    call Player_Get_Balance ; returns balance in r25:r24
+    call LCD_Print_Dec16
     
     ; Wait dynamically to let players read result
     push temp2
     ldi temp2, RESULT_DELAY_COUNT
 resolution_delay_loop:
     ldi temp, 250
-    rcall delay_ms
+    call delay_ms
     dec temp2
     brne resolution_delay_loop
     pop temp2

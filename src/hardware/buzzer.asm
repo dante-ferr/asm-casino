@@ -109,3 +109,100 @@ buzzer_delay_inner:
     brne buzzer_delay_outer
     pop temp2
     ret
+
+; Plays the currently selected music track and animates the LED matrix border.
+; Returns temp = button code (1, 2, 3) if interrupted, 0 if finished playing
+Buzzer_Play_Current_Track:
+    push temp2
+    push r18
+    push r19
+    push ZL
+    push ZH
+    
+    ; Always load Ode to Joy
+    ldi ZL, low(ode_to_joy_table * 2)
+    ldi ZH, high(ode_to_joy_table * 2)
+    ldi r19, ODE_TO_JOY_TEMPO_PAUSE
+    
+play_loop_start:
+    push r19                ; Save pause duration on stack
+    
+ode_loop:
+    lpm r18, Z+             ; r18 = pitch
+    lpm r19, Z+             ; r19 = cycles
+    
+    ; check end marker
+    tst r18
+    breq ode_done
+    
+    ; Advance and render animation step on LED matrix
+    lds temp2, RAM_BALL_IDX
+    inc temp2
+    cpi temp2, MATRIX_RING_SIZE
+    brlo ball_no_wrap
+    ldi temp2, 0
+ball_no_wrap:
+    sts RAM_BALL_IDX, temp2
+    ldi temp, 0x80          ; center diamond pattern
+    rcall Matrix_Render_Frame
+    
+    ; Play note
+    mov temp, r18
+    mov temp2, r19
+    rcall Buzzer_Play_Tone
+    
+play_done:
+    ; Pause while checking buttons
+    pop r19                 ; restore pause duration
+    push r19
+    
+    mov temp, r19
+    clr temp2
+div_10_loop:
+    subi temp, 10
+    brcs div_10_done
+    inc temp2
+    rjmp div_10_loop
+div_10_done:
+    tst temp2
+    breq pause_loop_done
+    mov temp, temp2         ; loop counter
+pause_loop:
+    push temp
+    rcall Read_Buttons
+    tst temp
+    breq pause_no_press
+    
+    ; Button pressed! Save button code in r18
+    mov r18, temp
+    pop temp                ; clean up loop counter
+    pop r19                 ; clean up pause duration
+    mov temp, r18           ; return button code in temp
+    rjmp ode_exit
+    
+pause_no_press:
+    ldi temp, 10
+    rcall delay_ms
+    pop temp
+    dec temp
+    brne pause_loop
+pause_loop_done:
+    rjmp ode_loop
+
+ode_done:
+    pop r19                 ; clean up pause duration
+    ldi temp, 0             ; return 0 (no button pressed)
+ode_exit:
+    pop ZH
+    pop ZL
+    pop r19
+    pop r18
+    pop temp2
+    ret
+
+; Include individual tracks
+.include "game/music/ode_to_joy.asm"
+; .include "game/music/badinerie.asm" ; Left as a file for future use
+
+
+

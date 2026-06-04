@@ -73,6 +73,8 @@ RESET:
     ldi fsm_state, STATE_WELCOME ; Start with welcome screen
     ldi active_plyr, 1     ; Start with Player 1
     ldi sys_flags, 0
+    ldi temp, 0
+    sts RAM_CURRENT_TRACK, temp ; Initialize music track index to 0
 
     ; 7b. Initialize soft PWM and fading variables
     ldi temp, 0
@@ -108,61 +110,61 @@ RESET:
 MAIN_LOOP:
     cpi fsm_state, STATE_MAIN_MENU
     brne CHECK_STATE_1
-    rcall Run_Main_Menu
+    call Run_Main_Menu
     rjmp MAIN_LOOP
 
 CHECK_STATE_1:
     cpi fsm_state, STATE_CHOOSE_CAT
     brne CHECK_STATE_2
-    rcall Run_Choose_Cat
+    call Run_Choose_Cat
     rjmp MAIN_LOOP
 
 CHECK_STATE_2:
     cpi fsm_state, STATE_CHOOSE_BET
     brne CHECK_STATE_3
-    rcall Run_Choose_Bet
+    call Run_Choose_Bet
     rjmp MAIN_LOOP
 
 CHECK_STATE_3:
     cpi fsm_state, STATE_CONFIRM_BET
     brne CHECK_STATE_4
-    rcall Run_Confirm_Bet
+    call Run_Confirm_Bet
     rjmp MAIN_LOOP
 
 CHECK_STATE_4:
     cpi fsm_state, STATE_SPIN_ROULET
     brne CHECK_STATE_5
-    rcall Run_Spin_Roulette
+    call Run_Spin_Roulette
     rjmp MAIN_LOOP
 
 CHECK_STATE_5:
     cpi fsm_state, STATE_RESOLUTION
     brne CHECK_STATE_6
-    rcall Run_Resolution
+    call Run_Resolution
     rjmp MAIN_LOOP
 
 CHECK_STATE_6:
     cpi fsm_state, STATE_EN_PRISON
     brne CHECK_STATE_7
-    rcall Run_En_Prison
+    call Run_En_Prison
     rjmp MAIN_LOOP
 
 CHECK_STATE_7:
     cpi fsm_state, STATE_SET_CREDITS
     brne CHECK_STATE_8
-    rcall Run_Set_Credits
+    call Run_Set_Credits
     rjmp MAIN_LOOP
 
 CHECK_STATE_8:
     cpi fsm_state, STATE_NUM_PLAYERS
     brne CHECK_STATE_9
-    rcall Run_Num_Players
+    call Run_Num_Players
     rjmp MAIN_LOOP
 
 CHECK_STATE_9:
     cpi fsm_state, STATE_WELCOME
     brne MAIN_LOOP
-    rcall Run_Welcome
+    call Run_Welcome
     rjmp MAIN_LOOP
 
 ; Driver and Game Logic Inclusions

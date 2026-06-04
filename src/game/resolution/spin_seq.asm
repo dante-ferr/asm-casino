@@ -67,7 +67,7 @@ spin_anim_loop:
     
     mov temp, r23           ; determine delay based on remaining steps
     rcall get_friction_delay ; returns delay in temp
-    rcall delay_ms
+    call delay_ms
     
     ; Advance to next physical slot clockwise
     inc r21

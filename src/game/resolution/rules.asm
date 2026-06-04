@@ -84,7 +84,7 @@ win_internal_35to1:
     
     clr r22
     clr r23                 ; r23:r22 = multiplier accumulator
-    ldi temp, 36
+    ldi temp, MULTIPLIER_INTERNAL_TOTAL
 payout_mul_loop:
     add r22, r24
     adc r23, r25
@@ -185,10 +185,10 @@ check_external:
     cpi temp2, 0            ; Red
     brne check_black
     
-    ; Red: check if color of winning number is Red (1)
+    ; Red: check if color of winning number is Red (COLOR_RED)
     mov r21, r20
     rcall get_number_color  ; returns color in r21 (0=G, 1=R, 2=B)
-    cpi r21, 1              ; Red?
+    cpi r21, COLOR_RED      ; Red?
     breq bet_win
     rjmp bet_lose
     
@@ -196,10 +196,10 @@ check_black:
     cpi temp2, 1            ; Black
     brne check_even
     
-    ; Black: check if color of winning number is Black (2)
+    ; Black: check if color of winning number is Black (COLOR_BLACK)
     mov r21, r20
     rcall get_number_color
-    cpi r21, 2              ; Black?
+    cpi r21, COLOR_BLACK    ; Black?
     breq bet_win
     rjmp bet_lose
     

@@ -56,7 +56,7 @@ show_betting_normal:
     ldd temp, Z+4           ; selection index (0-42)
     
     ; Display target name
-    cpi temp, 6
+    cpi temp, FIRST_INTERNAL_IDX
     brsh show_tgt_num
     
     ; External Target (0-5)
@@ -75,14 +75,14 @@ show_betting_normal:
     rjmp show_tgt_cursor_check
     
 show_tgt_num:
-    ; Print "NUM: [temp - 6]"
+    ; Print "NUM: [temp - FIRST_INTERNAL_IDX]"
     ldi ZL, low(msg_num_prefix * 2)
     ldi ZH, high(msg_num_prefix * 2)
     rcall LCD_Print_Msg
     
     rcall Player_Get_Pointer
     ldd r24, Z+4
-    subi r24, 6
+    subi r24, FIRST_INTERNAL_IDX
     clr r25
     rcall LCD_Print_Dec16
     

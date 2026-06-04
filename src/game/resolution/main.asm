@@ -109,7 +109,7 @@ resolution_has_bet:
     mov r25, r19
     clr r22
     clr r23
-    ldi temp, 35
+    ldi temp, MULTIPLIER_INTERNAL_PAYOUT
 mul_35_loop:
     add r22, r24
     adc r23, r25

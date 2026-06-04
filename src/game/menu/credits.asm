@@ -13,16 +13,16 @@ set_credits_loop:
     ; Get current balance (r25:r24)
     rcall Player_Get_Balance
     
-    ; Check maximum limit (9900 points)
-    cpi r24, low(9900)
-    ldi temp2, high(9900)
+    ; Check maximum limit
+    cpi r24, low(CREDIT_MAX_LIMIT)
+    ldi temp2, high(CREDIT_MAX_LIMIT)
     cpc r25, temp2
-    brsh set_credits_tick   ; Skip addition if already >= 9900
+    brsh set_credits_tick   ; Skip addition if already at max limit
     
-    ; Add 100 points
-    ldi temp2, 100
+    ; Add CREDIT_STEP points
+    ldi temp2, low(CREDIT_STEP)
     add r24, temp2
-    ldi temp2, 0
+    ldi temp2, high(CREDIT_STEP)
     adc r25, temp2
     rcall Player_Set_Balance
     
@@ -38,16 +38,16 @@ set_credits_b:
     ; Get current balance (r25:r24)
     rcall Player_Get_Balance
     
-    ; Check minimum limit (0 points)
-    cpi r24, 0
-    ldi temp2, 0
+    ; Check minimum limit
+    cpi r24, low(CREDIT_MIN_LIMIT)
+    ldi temp2, high(CREDIT_MIN_LIMIT)
     cpc r25, temp2
-    breq set_credits_tick   ; Skip subtraction if already 0
+    breq set_credits_tick   ; Skip subtraction if already at min limit
     
-    ; Subtract 100 points
-    ldi temp2, 100
+    ; Subtract CREDIT_STEP points
+    ldi temp2, low(CREDIT_STEP)
     sub r24, temp2
-    ldi temp2, 0
+    ldi temp2, high(CREDIT_STEP)
     sbc r25, temp2
     rcall Player_Set_Balance
     rjmp set_credits_tick

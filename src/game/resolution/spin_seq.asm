@@ -20,8 +20,8 @@ Run_Roulette_Spin_Sequence:
     mov r22, temp2          ; r22 now contains the winning slot index S_win (0 to 36)
     
     ; 2. Determine total steps for animation (at least 2 full loops + S_win)
-    ; total steps = 74 + S_win
-    ldi r23, 74
+    ; total steps = SPIN_BASE_STEPS + S_win
+    ldi r23, SPIN_BASE_STEPS
     add r23, r22            ; r23 = total steps remaining (counter decreases)
     
     push r22                ; Save rigged winning slot (S_win) to prevent overwrite
@@ -71,7 +71,7 @@ spin_anim_loop:
     
     ; Advance to next physical slot clockwise
     inc r21
-    cpi r21, 37
+    cpi r21, ROULETTE_SLOTS
     brlo slot_no_wrap
     ldi r21, 0
 slot_no_wrap:
@@ -129,10 +129,10 @@ map_slot_to_led:
     push r24
     push r25
     
-    ; 1. Multiply S (r22) by 20 -> result in r25:r24
+    ; 1. Multiply S (r22) by MATRIX_RING_SIZE -> result in r25:r24
     clr r24
     clr r25
-    ldi temp, 20
+    ldi temp, MATRIX_RING_SIZE
 mul_loop_spin:
     add r24, r22
     clr r20
@@ -140,27 +140,27 @@ mul_loop_spin:
     dec temp
     brne mul_loop_spin
     
-    ; 2. Divide r25:r24 by 37 via subtraction loop
+    ; 2. Divide r25:r24 by ROULETTE_SLOTS via subtraction loop
     clr r20                 ; r20 will hold the result (L)
 div_loop_spin:
-    cpi r24, 37
+    cpi r24, ROULETTE_SLOTS
     ldi temp, 0
     cpc r25, temp
-    brlo div_done_spin      ; if r25:r24 < 37, done
+    brlo div_done_spin      ; if r25:r24 < ROULETTE_SLOTS, done
     
-    subi r24, 37
+    subi r24, ROULETTE_SLOTS
     sbci r25, 0
     inc r20
     rjmp div_loop_spin
     
 div_done_spin:
-    ; 3. Add offset of +2 to align slot 0 (number 0) at the 4th column of the top row (LED index 2)
-    subi r20, -2
+    ; 3. Add offset of ROULETTE_ALIGN_OFFSET to align slot 0 (number 0) at the 4th column of the top row (LED index 2)
+    subi r20, -ROULETTE_ALIGN_OFFSET
     
-    ; 4. Modulo 20 wrap-around
-    cpi r20, 20
+    ; 4. Modulo MATRIX_RING_SIZE wrap-around
+    cpi r20, MATRIX_RING_SIZE
     brlo mod_20_spin_done
-    subi r20, 20
+    subi r20, MATRIX_RING_SIZE
 mod_20_spin_done:
     pop r25
     pop r24

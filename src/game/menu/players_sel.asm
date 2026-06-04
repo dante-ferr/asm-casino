@@ -13,9 +13,9 @@ num_players_loop:
     ; Get current count from RAM_NUM_PLAYERS
     lds temp2, RAM_NUM_PLAYERS
     inc temp2
-    cpi temp2, 5
+    cpi temp2, MAX_PLAYERS + 1
     brlo save_num_players_inc
-    ldi temp2, 1           ; wrap-around to 1
+    ldi temp2, MIN_PLAYERS           ; wrap-around to MIN_PLAYERS
 save_num_players_inc:
     sts RAM_NUM_PLAYERS, temp2
     rjmp num_players_tick
@@ -26,9 +26,9 @@ num_players_check_b:
     
     lds temp2, RAM_NUM_PLAYERS
     dec temp2
-    tst temp2
-    brne save_num_players_dec
-    ldi temp2, 4           ; wrap-around to 4
+    cpi temp2, MIN_PLAYERS
+    brsh save_num_players_dec
+    ldi temp2, MAX_PLAYERS           ; wrap-around to MAX_PLAYERS
 save_num_players_dec:
     sts RAM_NUM_PLAYERS, temp2
     rjmp num_players_tick

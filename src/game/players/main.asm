@@ -12,16 +12,16 @@ Players_Init:
     ldi ZL, low(PLAYER_DATA_START)
     ldi ZH, high(PLAYER_DATA_START)
     
-    ldi r20, 4              ; Initialize 4 players
+    ldi r20, MAX_PLAYERS              ; Initialize players
 players_init_loop:
-    ; 1. Set starting balance to 1000 points (0x03E8)
-    ldi temp, 0x03          ; Balance High Byte (0x03)
+    ; 1. Set starting balance to START_BALANCE
+    ldi temp, high(START_BALANCE)     ; Balance High Byte
     st Z+, temp
-    ldi temp, 0xE8          ; Balance Low Byte (0xE8)
+    ldi temp, low(START_BALANCE)      ; Balance Low Byte
     st Z+, temp
     
-    ; 2. Initialize the remaining 14 bytes of the player struct to 0
-    ldi temp, 14
+    ; 2. Initialize the remaining bytes of the player struct to 0
+    ldi temp, PLAYER_SIZE - 2
     ldi temp2, 0
 init_zeros_loop:
     st Z+, temp2
@@ -55,7 +55,7 @@ Player_Get_Pointer:
     dec temp
     breq get_ptr_done       ; If Player 1, offset is 0
     
-    ldi r24, 16             ; 16 bytes per player record
+    ldi r24, PLAYER_SIZE             ; bytes per player record
     clr temp2               ; zero register for carry addition
 get_ptr_loop:
     add ZL, r24

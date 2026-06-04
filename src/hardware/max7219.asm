@@ -53,29 +53,29 @@ Matrix_Init:
     ; CS starts high
     sbi PORTC, MATRIX_CS
     
-    ; Shutdown register (0x0C): Normal operation (0x01)
-    ldi temp, 0x0C
+    ; Shutdown register: Normal operation (0x01)
+    ldi temp, MAX7219_SHUTDOWN
     ldi temp2, 0x01
     rcall max7219_write
 
-    ; Display test register (0x0F): Normal mode (0x00)
-    ldi temp, 0x0F
+    ; Display test register: Normal mode (0x00)
+    ldi temp, MAX7219_TEST
     ldi temp2, 0x00
     rcall max7219_write
 
-    ; Decode mode register (0x09): No decode (0x00)
-    ldi temp, 0x09
+    ; Decode mode register: No decode (0x00)
+    ldi temp, MAX7219_DECODE
     ldi temp2, 0x00
     rcall max7219_write
 
-    ; Scan limit register (0x0B): Scan all digits 0-7 (0x07)
-    ldi temp, 0x0B
+    ; Scan limit register: Scan all digits 0-7 (0x07)
+    ldi temp, MAX7219_SCAN_LIMIT
     ldi temp2, 0x07
     rcall max7219_write
 
-    ; Intensity register (0x0A): Set brightness level (0x03)
-    ldi temp, 0x0A
-    ldi temp2, 0x03
+    ; Intensity register: Set brightness level
+    ldi temp, MAX7219_INTENSITY
+    ldi temp2, MAX7219_BRIGHTNESS
     rcall max7219_write
 
     rcall Matrix_Clear

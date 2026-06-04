@@ -32,10 +32,10 @@ handle_mode_target:
     brne target_check_b
     
     rcall Player_Get_Pointer
-    ldd temp2, Z+4          ; current selection index (0-42)
+    ldd temp2, Z+4          ; current selection index
     tst temp2
     brne target_dec_no_wrap
-    ldi temp2, 43
+    ldi temp2, NUM_BET_TARGETS
 target_dec_no_wrap:
     dec temp2
     std Z+4, temp2
@@ -48,7 +48,7 @@ target_check_b:
     rcall Player_Get_Pointer
     ldd temp2, Z+4
     inc temp2
-    cpi temp2, 43
+    cpi temp2, NUM_BET_TARGETS
     brlo target_inc_save
     ldi temp2, 0
 target_inc_save:
@@ -85,10 +85,10 @@ handle_mode_value:
     cpc r25, r19
     brsh value_tick_beep    ; error beep if already at balance
     
-    ; Add 100 points
-    ldi temp2, 100
+    ; Add BET_STEP points
+    ldi temp2, low(BET_STEP)
     add r24, temp2
-    ldi temp2, 0
+    ldi temp2, high(BET_STEP)
     adc r25, temp2
     
     ; Double check if exceeds balance
@@ -123,10 +123,10 @@ value_check_b:
     or temp2, r25
     breq value_tick_beep
     
-    ; Subtract 100 points
-    ldi temp2, 100
+    ; Subtract BET_STEP points
+    ldi temp2, low(BET_STEP)
     sub r24, temp2
-    ldi temp2, 0
+    ldi temp2, high(BET_STEP)
     sbc r25, temp2
     
     rcall Player_Get_Pointer

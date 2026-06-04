@@ -92,11 +92,11 @@ i2c_pulse_scl:
 ; Write command to LCD (command in temp)
 lcd_write_cmd:
     rcall i2c_start
-    ldi temp2, 0x7C       ; LCD write address
+    ldi temp2, LCD_I2C_ADDR       ; LCD write address
     push temp
     mov temp, temp2
     rcall i2c_write_byte
-    ldi temp, 0x80        ; control byte: next byte is command
+    ldi temp, LCD_CTRL_CMD        ; control byte: next byte is command
     rcall i2c_write_byte
     pop temp
     rcall i2c_write_byte  ; send command
@@ -106,11 +106,11 @@ lcd_write_cmd:
 ; Write data/character to LCD (char in temp)
 lcd_write_data:
     rcall i2c_start
-    ldi temp2, 0x7C       ; LCD write address
+    ldi temp2, LCD_I2C_ADDR       ; LCD write address
     push temp
     mov temp, temp2
     rcall i2c_write_byte
-    ldi temp, 0x40        ; control byte: next byte is data
+    ldi temp, LCD_CTRL_DATA       ; control byte: next byte is data
     rcall i2c_write_byte
     pop temp
     rcall i2c_write_byte  ; send character
@@ -130,25 +130,25 @@ LCD_Init:
     rcall delay_ms
 
     ; Function set (8-bit mode, 2 lines, 5x8 font)
-    ldi temp, 0x38
+    ldi temp, LCD_CMD_FUNC
     rcall lcd_write_cmd
     ldi temp, 5
     rcall delay_ms
 
-    ldi temp, 0x38
+    ldi temp, LCD_CMD_FUNC
     rcall lcd_write_cmd
     ldi temp, 1
     rcall delay_ms
 
-    ldi temp, 0x38
+    ldi temp, LCD_CMD_FUNC
     rcall lcd_write_cmd
 
     ; Display ON, cursor OFF
-    ldi temp, 0x0C
+    ldi temp, LCD_CMD_ON
     rcall lcd_write_cmd
 
     ; Entry mode: auto-increment cursor
-    ldi temp, 0x06
+    ldi temp, LCD_CMD_ENTRY
     rcall lcd_write_cmd
 
     rcall LCD_Clear
@@ -156,7 +156,7 @@ LCD_Init:
 
 ; Clear LCD display
 LCD_Clear:
-    ldi temp, 0x01
+    ldi temp, LCD_CMD_CLEAR
     rcall lcd_write_cmd
     ldi temp, 2
     rcall delay_ms

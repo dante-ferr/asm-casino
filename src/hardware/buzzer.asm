@@ -5,8 +5,8 @@
 Buzzer_Tick:
     push temp
     push temp2
-    ldi temp, 50            ; 250us half-period (2 kHz tone)
-    ldi temp2, 10           ; 10 cycles (~5ms duration)
+    ldi temp, TONE_TICK_PITCH
+    ldi temp2, TONE_TICK_LEN
     rcall Buzzer_Play_Tone
     pop temp2
     pop temp
@@ -16,8 +16,8 @@ Buzzer_Tick:
 Buzzer_Beep:
     push temp
     push temp2
-    ldi temp, 100           ; 500us half-period (1 kHz tone)
-    ldi temp2, 80           ; 80 cycles (~80ms duration)
+    ldi temp, TONE_BEEP_PITCH
+    ldi temp2, TONE_BEEP_LEN
     rcall Buzzer_Play_Tone
     pop temp2
     pop temp

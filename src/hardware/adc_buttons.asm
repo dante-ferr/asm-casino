@@ -21,27 +21,27 @@ wait_adc:
 
     ; Threshold comparison (cascade logic from highest to lowest voltage)
     
-    ; None: ADC >= 900
-    cpi r24, low(900)
-    ldi temp, high(900)
+    ; None: ADC >= BTN_THRES_NONE
+    cpi r24, low(BTN_THRES_NONE)
+    ldi temp, high(BTN_THRES_NONE)
     cpc r25, temp
     brsh btn_none
 
-    ; Select: ADC >= 650 (covers 650 to 899)
-    cpi r24, low(650)
-    ldi temp, high(650)
+    ; Select: ADC >= BTN_THRES_SELECT
+    cpi r24, low(BTN_THRES_SELECT)
+    ldi temp, high(BTN_THRES_SELECT)
     cpc r25, temp
     brsh btn_select
 
-    ; Button B (History): ADC >= 450 (covers 450 to 649)
-    cpi r24, low(450)
-    ldi temp, high(450)
+    ; Button B (History): ADC >= BTN_THRES_B
+    cpi r24, low(BTN_THRES_B)
+    ldi temp, high(BTN_THRES_B)
     cpc r25, temp
     brsh btn_b
 
-    ; Button A (Next): ADC < 150
-    cpi r24, 150
-    ldi temp, 0
+    ; Button A (Next): ADC < BTN_THRES_A
+    cpi r24, low(BTN_THRES_A)
+    ldi temp, high(BTN_THRES_A)
     cpc r25, temp
     brlo btn_a
 

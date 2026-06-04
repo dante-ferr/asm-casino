@@ -97,3 +97,65 @@
 .equ STATE_SET_CREDITS  = 7
 .equ STATE_NUM_PLAYERS  = 8
 .equ STATE_WELCOME      = 9
+
+; --- GAME ARCHITECTURAL SETTINGS ---
+; Player limits
+.equ START_BALANCE             = 1000  ; Initial player credits
+.equ MIN_PLAYERS               = 1
+.equ MAX_PLAYERS               = 4
+
+; Credit adjustment settings
+.equ CREDIT_STEP               = 100   ; Step value for adding/subtracting credits
+.equ CREDIT_MAX_LIMIT          = 9900  ; Max allowed credits
+.equ CREDIT_MIN_LIMIT          = 0     ; Min allowed credits
+
+; Betting limits
+.equ BET_STEP                  = 100   ; Step value for betting
+.equ NUM_BET_TARGETS           = 43    ; Total target options (0-42)
+.equ FIRST_INTERNAL_IDX        = 6     ; Start index for internal number bets (0-5 are external)
+
+; Win payouts
+.equ MULTIPLIER_INTERNAL_PAYOUT = 35   ; Internal bet payout multiplier
+.equ MULTIPLIER_INTERNAL_TOTAL  = 36   ; Total internal payout value including original bet
+
+; Roulette Wheel & Spin settings
+.equ ROULETTE_SLOTS            = 37    ; Slots on French wheel (0 to 36)
+.equ MATRIX_RING_SIZE          = 20    ; Total LEDs around the 8x8 border
+.equ ROULETTE_ALIGN_OFFSET     = 2     ; Offset to align wheel zero with matrix ring index
+.equ SPIN_MIN_LOOPS            = 2     ; Minimum wheel loops for spin animation
+.equ SPIN_BASE_STEPS           = (SPIN_MIN_LOOPS * ROULETTE_SLOTS)
+
+; Logical Colors
+.equ COLOR_GREEN               = 0
+.equ COLOR_RED                 = 1
+.equ COLOR_BLACK               = 2
+
+; Hardware Button Analog Thresholds (Resistor Ladder)
+.equ BTN_THRES_NONE            = 900
+.equ BTN_THRES_SELECT          = 650
+.equ BTN_THRES_B               = 450
+.equ BTN_THRES_A               = 150
+
+; LCD Commands & Parameters
+.equ LCD_I2C_ADDR              = 0x7C
+.equ LCD_CTRL_CMD              = 0x80
+.equ LCD_CTRL_DATA             = 0x40
+.equ LCD_CMD_CLEAR             = 0x01
+.equ LCD_CMD_FUNC              = 0x38
+.equ LCD_CMD_ON                = 0x0C
+.equ LCD_CMD_ENTRY             = 0x06
+
+; MAX7219 Commands & Parameters
+.equ MAX7219_SHUTDOWN          = 0x0C
+.equ MAX7219_TEST              = 0x0F
+.equ MAX7219_DECODE            = 0x09
+.equ MAX7219_SCAN_LIMIT        = 0x0B
+.equ MAX7219_INTENSITY         = 0x0A
+.equ MAX7219_BRIGHTNESS        = 0x03
+
+; Buzzer Tone Settings
+.equ TONE_TICK_PITCH           = 50
+.equ TONE_TICK_LEN             = 10
+.equ TONE_BEEP_PITCH           = 100
+.equ TONE_BEEP_LEN             = 80
+

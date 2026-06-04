@@ -19,8 +19,8 @@ RGB_Set_By_Number:
     ; Clear current color first
     rcall RGB_Clear
     
-    ; If number >= 37, ignore
-    cpi temp, 37
+    ; If number >= ROULETTE_SLOTS, ignore
+    cpi temp, ROULETTE_SLOTS
     brsh rgb_done
     
     ; Load Z with color_table * 2 (Flash byte address)
@@ -30,13 +30,13 @@ RGB_Set_By_Number:
     clr temp
     adc ZH, temp
     
-    lpm temp, Z             ; Load color type (0=Green, 1=Red, 2=Black)
+    lpm temp, Z             ; Load color type (COLOR_GREEN, COLOR_RED, COLOR_BLACK)
     
-    cpi temp, 0
+    cpi temp, COLOR_GREEN
     breq rgb_set_g
-    cpi temp, 1
+    cpi temp, COLOR_RED
     breq rgb_set_r
-    cpi temp, 2
+    cpi temp, COLOR_BLACK
     breq rgb_set_b
     rjmp rgb_done
     
@@ -55,11 +55,11 @@ rgb_done:
     pop temp
     ret
 
-; Lookup table for roulette number colors (0=Green, 1=Red, 2=Black)
+; Lookup table for roulette number colors
 color_table:
-    .db 0, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 2, 1, 2, 1, 2
-    .db 1, 2, 1, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 2, 1, 2
-    .db 1, 2, 1, 2, 1, 0     ; padded to even length
+    .db COLOR_GREEN, COLOR_RED, COLOR_BLACK, COLOR_RED, COLOR_BLACK, COLOR_RED, COLOR_BLACK, COLOR_RED, COLOR_BLACK, COLOR_RED, COLOR_BLACK, COLOR_BLACK, COLOR_RED, COLOR_BLACK, COLOR_RED, COLOR_BLACK
+    .db COLOR_RED, COLOR_BLACK, COLOR_RED, COLOR_RED, COLOR_BLACK, COLOR_RED, COLOR_BLACK, COLOR_RED, COLOR_BLACK, COLOR_RED, COLOR_BLACK, COLOR_RED, COLOR_BLACK, COLOR_BLACK, COLOR_RED, COLOR_BLACK
+    .db COLOR_RED, COLOR_BLACK, COLOR_RED, COLOR_BLACK, COLOR_RED, COLOR_GREEN     ; padded to even length
 
 ; Set RGB LED color according to active player (1 to 4)
 ; Inputs:

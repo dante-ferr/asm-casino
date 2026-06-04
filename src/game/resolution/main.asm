@@ -95,6 +95,7 @@ resolution_has_bet:
     breq resolution_normal_loss
     
     ; Normal Win!
+    rcall Buzzer_Success
     ldi ZL, low(msg_p_won_prefix * 2)
     ldi ZH, high(msg_p_won_prefix * 2)
     rcall LCD_Print_Msg
@@ -126,6 +127,7 @@ print_ext_win_val:
     rjmp resolution_show_balance
     
 resolution_normal_loss:
+    rcall Buzzer_Failure
     ldi ZL, low(msg_p_lost_prefix * 2)
     ldi ZH, high(msg_p_lost_prefix * 2)
     rcall LCD_Print_Msg
@@ -150,6 +152,7 @@ resolution_was_prison:
     breq resolution_prison_loss
     
     ; Released!
+    rcall Buzzer_Success
     ldi ZL, low(msg_p_win_ext * 2)
     ldi ZH, high(msg_p_win_ext * 2)
     rcall LCD_Print_Msg
@@ -159,6 +162,7 @@ resolution_was_prison:
     rjmp resolution_show_balance
     
 resolution_prison_loss:
+    rcall Buzzer_Failure
     ldi ZL, low(msg_p_lost_prison * 2)
     ldi ZH, high(msg_p_lost_prison * 2)
     rcall LCD_Print_Msg
@@ -176,27 +180,15 @@ resolution_show_balance:
     rcall Player_Get_Balance ; returns balance in r25:r24
     rcall LCD_Print_Dec16
     
-    ; Wait 2.5 seconds dynamically to let players read result
+    ; Wait 5.0 seconds dynamically to let players read result
+    push temp2
+    ldi temp2, 20
+resolution_delay_loop:
     ldi temp, 250
     rcall delay_ms
-    ldi temp, 250
-    rcall delay_ms
-    ldi temp, 250
-    rcall delay_ms
-    ldi temp, 250
-    rcall delay_ms
-    ldi temp, 250
-    rcall delay_ms
-    ldi temp, 250
-    rcall delay_ms
-    ldi temp, 250
-    rcall delay_ms
-    ldi temp, 250
-    rcall delay_ms
-    ldi temp, 250
-    rcall delay_ms
-    ldi temp, 250
-    rcall delay_ms
+    dec temp2
+    brne resolution_delay_loop
+    pop temp2
     
     ; Loop to next player
     inc active_plyr

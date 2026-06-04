@@ -86,6 +86,12 @@ stop_delay_loop:
     rjmp welcome_main_loop
 
 welcome_button_pressed:
+    ; Wait for the button to be released
+wait_welcome_release:
+    rcall Read_Buttons
+    tst temp
+    brne wait_welcome_release
+
     ; Play confirmation beep
     rcall Buzzer_Beep
     

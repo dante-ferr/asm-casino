@@ -180,9 +180,9 @@ resolution_show_balance:
     rcall Player_Get_Balance ; returns balance in r25:r24
     rcall LCD_Print_Dec16
     
-    ; Wait 5.0 seconds dynamically to let players read result
+    ; Wait dynamically to let players read result
     push temp2
-    ldi temp2, 20
+    ldi temp2, RESULT_DELAY_COUNT
 resolution_delay_loop:
     ldi temp, 250
     rcall delay_ms

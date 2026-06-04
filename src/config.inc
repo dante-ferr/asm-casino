@@ -124,6 +124,7 @@
 .equ ROULETTE_ALIGN_OFFSET     = 2     ; Offset to align wheel zero with matrix ring index
 .equ SPIN_MIN_LOOPS            = 2     ; Minimum wheel loops for spin animation
 .equ SPIN_BASE_STEPS           = (SPIN_MIN_LOOPS * ROULETTE_SLOTS)
+.equ RESULT_DELAY_COUNT        = 14    ; Result display delay loop count (20 * 250ms = 5 seconds)
 
 ; Logical Colors
 .equ COLOR_GREEN               = 0

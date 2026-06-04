@@ -168,12 +168,12 @@ CHECK_STATE_9:
     rjmp MAIN_LOOP
 
 ; Driver and Game Logic Inclusions
-.include "hardware/lcd_i2c.asm"
-.include "hardware/seven_seg.asm"
-.include "hardware/max7219.asm"
-.include "hardware/adc_buttons.asm"
-.include "hardware/buzzer.asm"
-.include "hardware/rgb_led.asm"
+.include "hardware/lcd_i2c/main.asm"
+.include "hardware/seven_seg/main.asm"
+.include "hardware/max7219/main.asm"
+.include "hardware/adc_buttons/main.asm"
+.include "hardware/buzzer/main.asm"
+.include "hardware/rgb_led/main.asm"
 .include "game/players/main.asm"
 .include "game/prng/main.asm"
 .include "game/menu/main.asm"

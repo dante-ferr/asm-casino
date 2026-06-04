@@ -16,7 +16,7 @@ Run_Roulette_Spin_Sequence:
     push ZH
     
     ; 1. Draw a pseudo-random winning slot index (0 to 36) using PRNG
-    rcall PRNG_Spin
+    call PRNG_Spin
     mov r22, temp2          ; r22 now contains the winning slot index S_win (0 to 36)
     
     ; 2. Determine total steps for animation (at least 2 full loops + S_win)
@@ -46,7 +46,7 @@ spin_anim_loop:
     
     ; Set RGB LED color according to current number
     mov temp, r24
-    rcall RGB_Set_By_Number
+    call RGB_Set_By_Number
     
     ; Map slot S (r21) to LED matrix index L (0-19)
     ; Formula: L = (S * 20) / 37
@@ -56,10 +56,10 @@ spin_anim_loop:
     ; Render matrix frame with static diamond and ball at L
     ldi temp, 0x80
     mov temp2, r20
-    rcall Matrix_Render_Frame
+    call Matrix_Render_Frame
     
     ; Play spin step sound
-    rcall Buzzer_Tick
+    call Buzzer_Tick
     
     ; Decelerate using variable delay based on remaining steps (r23)
     pop r21                 ; restore S
@@ -99,11 +99,11 @@ slot_no_wrap:
     ; Render final frame
     ldi temp, 0x80
     mov temp2, r20
-    rcall Matrix_Render_Frame
+    call Matrix_Render_Frame
     
     ; Set winning color on RGB LED
     mov temp, r24
-    rcall RGB_Set_By_Number
+    call RGB_Set_By_Number
     
     ; Return winning number in temp2
     mov temp2, r24

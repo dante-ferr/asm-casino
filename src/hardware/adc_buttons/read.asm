@@ -1,6 +1,3 @@
-; Analog keyboard driver using ADC0 (pin PC0) with a resistor ladder
-; Detects three buttons: Button A (Next), Button B (History), and Select
-
 ; Reads current analog value and returns raw button code in temp (r16)
 ; Codes: 0 = None, 1 = Button A, 2 = Button B, 3 = Select
 Read_Buttons:
@@ -56,18 +53,4 @@ btn_b:
     ret
 btn_a:
     ldi temp, 1
-    ret
-
-; Waits for a button to be pressed and then fully released
-; Returns the pressed button code in temp
-Wait_Button_Press:
-    rcall Read_Buttons
-    tst temp
-    breq Wait_Button_Press
-    push temp
-wait_release:
-    rcall Read_Buttons
-    tst temp
-    brne wait_release
-    pop temp
     ret

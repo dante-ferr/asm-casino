@@ -1,8 +1,3 @@
-; 7-segment display multiplexed driver
-; Uses PORTD (PD5-PD7) for segments A, B, C
-; Uses PORTB (PB0-PB3) for segments D, E, F, G
-; Uses PB4 for Tens digit cathode and PB5 for Units digit cathode
-
 ; Timer 0 ISR for multiplexing 7-segment displays (runs every 2ms)
 TIMER0_ISR:
     push temp
@@ -219,6 +214,9 @@ show_units_anim:
     cbi PORTB, DISP_UNI   ; turn on units cathode (PB5=0)
     rjmp isr_exit
 
+isr_exit_bridge:
+    rjmp isr_exit
+
 isr_normal_seg:
     ; Read the current round number to display
     lds temp, RAM_ROUND_NUM
@@ -275,7 +273,7 @@ show_tens:
 
     ; Switch on tens cathode (active low)
     cbi PORTB, DISP_DEC
-    rjmp isr_exit
+    rjmp isr_exit_bridge
 
 show_units:
     ; Switch off tens cathode (active low)
@@ -288,6 +286,7 @@ show_units:
     add ZL, temp
     adc ZH, temp2
     lpm r24, Z
+    
 
     ; Fetch segment bits for PORTB
     ldi ZL, low(table_portb * 2)
@@ -295,6 +294,7 @@ show_units:
     add ZL, temp
     adc ZH, temp2
     lpm r25, Z
+    
 
     ; Write segments to PORTD (preserving PD0-PD4)
     in temp, PORTD
@@ -322,22 +322,3 @@ isr_exit:
     out SREG, temp
     pop temp
     reti
-
-; Segment mapping tables stored in Flash
-; table_portd maps digits 0-9 to PD7-PD5 (segments A, B, C)
-table_portd:
-    .db 0xE0, 0xC0, 0x60, 0xE0, 0xC0, 0xA0, 0xA0, 0xE0, 0xE0, 0xE0
-
-; table_portb maps digits 0-9 to PB3-PB0 (segments D, E, F, G)
-table_portb:
-    .db 0x07, 0x00, 0x0B, 0x09, 0x0C, 0x0D, 0x0F, 0x00, 0x0F, 0x0D
-
-; Display rotating segment tables (8 frames, single trace moving from left to right display)
-anim_table_portd_left:
-    .db 0x20, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
-anim_table_portb_left:
-    .db 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x02, 0x04
-anim_table_portd_right:
-    .db 0x00, 0x20, 0x40, 0x80, 0x00, 0x00, 0x00, 0x00
-anim_table_portb_right:
-    .db 0x00, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00

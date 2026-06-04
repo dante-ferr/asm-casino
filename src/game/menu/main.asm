@@ -18,7 +18,7 @@ test_button_loop:
     inc temp
     cp temp2, temp
     brlo update_active_plyr
-    ldi temp2, 1
+    ldi temp2, MIN_PLAYERS
 update_active_plyr:
     mov active_plyr, temp2
     

@@ -31,7 +31,7 @@ spin_fast_loop:
     brne welcome_button_pressed
     
     inc r18
-    cpi r18, 20
+    cpi r18, MATRIX_RING_SIZE
     brlo spin_fast_no_wrap
     ldi r18, 0
 spin_fast_no_wrap:
@@ -41,7 +41,7 @@ spin_fast_no_wrap:
     ; --- PHASE 2: DECELERATE (20 steps, delay increases from 40ms to 320ms) ---
     ldi r19, 20             ; Step counter
     ldi r22, 40             ; Initial delay (40ms)
-spin_decel_loop:
+    spin_decel_loop:
     mov temp2, r18
     ldi temp, 0x80
     rcall Matrix_Render_Frame
@@ -52,7 +52,7 @@ spin_decel_loop:
     brne welcome_button_pressed
     
     inc r18
-    cpi r18, 20
+    cpi r18, MATRIX_RING_SIZE
     brlo spin_decel_no_wrap
     ldi r18, 0
 spin_decel_no_wrap:
@@ -64,7 +64,7 @@ spin_decel_no_wrap:
     ; Decrement r18 to go back to the exact rest position (r18 - 1, with wrap-under)
     subi r18, 1
     brcc welcome_decel_no_underflow
-    ldi r18, 19
+    ldi r18, MATRIX_RING_SIZE - 1
 welcome_decel_no_underflow:
     
     ; Render static stopped position at the rest slot

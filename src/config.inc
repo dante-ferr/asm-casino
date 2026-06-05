@@ -138,8 +138,16 @@
 .equ BTN_THRES_B               = 450
 .equ BTN_THRES_A               = 150
 
-; LCD Commands & Parameters
-.equ LCD_I2C_ADDR              = 0x7C
+; Target hardware environment switch
+; Set to 0 for SimulIDE simulation (uses native ST7032 I2C display)
+; Set to 1 for physical hardware (uses HD44780 with PCF8574 I2C backpack)
+.equ USE_PCF8574_BACKPACK = 0
+
+.if USE_PCF8574_BACKPACK == 1
+.equ LCD_I2C_ADDR              = 0x4E   ; PCF8574 backpack address (usually 0x27 shifted left by 1 = 0x4E)
+.else
+.equ LCD_I2C_ADDR              = 0x7C   ; Native I2C LCD address in SimulIDE
+.endif
 .equ LCD_CTRL_CMD              = 0x80
 .equ LCD_CTRL_DATA             = 0x40
 .equ LCD_CMD_CLEAR             = 0x01

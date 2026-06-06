@@ -112,8 +112,8 @@
 
 ; Betting limits
 .equ BET_STEP                  = 100   ; Step value for betting
-.equ NUM_BET_TARGETS           = 43    ; Total target options (0-42)
-.equ FIRST_INTERNAL_IDX        = 6     ; Start index for internal number bets (0-5 are external)
+.equ NUM_BET_TARGETS           = 49    ; Total target options (0-48)
+.equ FIRST_INTERNAL_IDX        = 12    ; Start index for internal number bets (0-11 are external)
 
 ; Win payouts
 .equ MULTIPLIER_INTERNAL_PAYOUT = 35   ; Internal bet payout multiplier

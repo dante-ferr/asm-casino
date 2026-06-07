@@ -86,6 +86,7 @@
 .equ RAM_PWM_TICK    = 0x0157 ; Fade tick counter (1 byte)
 .equ RAM_FADE_STATE  = 0x0158 ; Fade state (0, 1, 2)
 .equ RAM_CURRENT_TRACK = 0x0159 ; Current active music track ID (1 byte)
+.equ RAM_FSM_STATE     = 0x015A ; Current active FSM state in SRAM (1 byte)
 
 ; FSM State Constants
 .equ STATE_MAIN_MENU    = 0
@@ -112,8 +113,8 @@
 
 ; Betting limits
 .equ BET_STEP                  = 100   ; Step value for betting
-.equ NUM_BET_TARGETS           = 43    ; Total target options (0-42)
-.equ FIRST_INTERNAL_IDX        = 6     ; Start index for internal number bets (0-5 are external)
+.equ NUM_BET_TARGETS           = 49    ; Total target options (0-48)
+.equ FIRST_INTERNAL_IDX        = 12    ; Start index for internal number bets (0-11 are external)
 
 ; Win payouts
 .equ MULTIPLIER_INTERNAL_PAYOUT = 35   ; Internal bet payout multiplier
@@ -133,13 +134,20 @@
 .equ COLOR_BLACK               = 2
 
 ; Hardware Button Analog Thresholds (Resistor Ladder)
-.equ BTN_THRES_NONE            = 900
-.equ BTN_THRES_SELECT          = 650
-.equ BTN_THRES_B               = 450
-.equ BTN_THRES_A               = 150
+.equ BTN_THRES_NONE            = 860
+.equ BTN_THRES_SELECT          = 610
+.equ BTN_THRES_B               = 350
 
-; LCD Commands & Parameters
-.equ LCD_I2C_ADDR              = 0x7C
+; Target hardware environment switch
+; Set to 0 for SimulIDE simulation (uses native ST7032 I2C display)
+; Set to 1 for physical hardware (uses HD44780 with PCF8574 I2C backpack)
+.equ USE_PCF8574_BACKPACK = 0
+
+.if USE_PCF8574_BACKPACK == 1
+.equ LCD_I2C_ADDR              = 0x4E   ; PCF8574 backpack address (usually 0x27 shifted left by 1 = 0x4E)
+.else
+.equ LCD_I2C_ADDR              = 0x7C   ; Native I2C LCD address in SimulIDE
+.endif
 .equ LCD_CTRL_CMD              = 0x80
 .equ LCD_CTRL_DATA             = 0x40
 .equ LCD_CMD_CLEAR             = 0x01

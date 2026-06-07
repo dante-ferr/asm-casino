@@ -71,6 +71,7 @@ RESET:
     ldi temp, 4
     sts RAM_NUM_PLAYERS, temp ; Default to 4 players
     ldi fsm_state, STATE_WELCOME ; Start with welcome screen
+    sts RAM_FSM_STATE, fsm_state
     ldi active_plyr, 1     ; Start with Player 1
     ldi sys_flags, 0
     ldi temp, 0
@@ -108,6 +109,7 @@ RESET:
 
 ; Main Loop
 MAIN_LOOP:
+    sts RAM_FSM_STATE, fsm_state
     cpi fsm_state, STATE_MAIN_MENU
     brne CHECK_STATE_1
     call Run_Main_Menu

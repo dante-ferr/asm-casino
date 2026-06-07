@@ -7,7 +7,7 @@
 <item itemtype="Push" CircId="Push-23" mainComp="false" Show_id="false" Show_Val="false" Pos="-224,-44" rotation="0" hflip="1" vflip="1" label="Push-23" idLabPos="-16,-24" labelrot="0" valLabPos="-16,20" valLabRot="0" Norm_Close="false" Poles="1" />
 
 <item itemtype="Subcircuit" CircId="Uno-78" mainComp="false" Show_id="true" Show_Val="false" Pos="-500,-100" rotation="0" hflip="1" vflip="1" label="Uno-78" idLabPos="0,-20" labelrot="0" valLabPos="-16,20" valLabRot="0" Logic_Symbol="false">
-<mainCompProps MainCompId="mega328-109" Frequency="16 MHz" Program="../src/main.hex" Auto_Load="false" saveEepr="true" MainMcu="true" SerialMon="-1" />
+<mainCompProps MainCompId="mega328-109" Frequency="16 MHz" Auto_Load="false" saveEepr="true" MainMcu="true" SerialMon="-1" />
 </item>
 
 <item itemtype="Resistor" CircId="Resistor-44" mainComp="false" ShowProp="Resistance" Show_id="false" Show_Val="true" Pos="-768,180" rotation="0" hflip="1" vflip="1" label="Resistor-44" idLabPos="-16,-24" labelrot="0" valLabPos="-16,6" valLabRot="0" Resistance="220 Ω" />
@@ -52,7 +52,7 @@
 
 <item itemtype="Resistor" CircId="Resistor-133" mainComp="false" Show_id="false" Show_Val="false" Pos="-304,-100" rotation="90" hflip="1" vflip="1" label="Resistor-133" idLabPos="-16,-24" labelrot="0" valLabPos="-17.5378,8.05035" valLabRot="0" Resistance="47000 Ω" />
 
-<item itemtype="Resistor" CircId="Resistor-144" mainComp="false" ShowProp="Resistance" Show_id="false" Show_Val="true" Pos="-676,-52" rotation="0" hflip="1" vflip="1" label="Resistor-144" idLabPos="-16,-24" labelrot="0" valLabPos="-16,6" valLabRot="0" Resistance="100 Ω" />
+<item itemtype="Resistor" CircId="Resistor-144" mainComp="false" ShowProp="Resistance" Show_id="false" Show_Val="true" Pos="-676,-52" rotation="0" hflip="1" vflip="1" label="Resistor-144" idLabPos="-16,-24" labelrot="0" valLabPos="-11.43,-16.197" valLabRot="0" Resistance="220 Ω" />
 
 <item itemtype="Node" CircId="Node-88" mainComp="false" Pos="-252,-44" />
 

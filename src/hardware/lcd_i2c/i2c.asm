@@ -12,9 +12,9 @@ i2c_delay_loop:
 delay_1ms:
     push temp
     push temp2
-    ldi temp, 16
+    ldi temp, 21
 delay_1ms_outer:
-    ldi temp2, 250
+    ldi temp2, 253
 delay_1ms_inner:
     dec temp2
     brne delay_1ms_inner

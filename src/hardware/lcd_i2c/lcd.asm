@@ -1,3 +1,154 @@
+.if USE_PCF8574_BACKPACK == 1
+
+; =========================================================================
+; --- PCF8574 I2C BACKPACK DRIVER (REAL HARDWARE) ---
+; =========================================================================
+
+; Write command to LCD (command in temp)
+lcd_write_cmd:
+    push temp2
+    ldi temp2, 0x08               ; RS = 0, BL = 1 (backlight ON)
+    rcall lcd_write_byte
+    pop temp2
+    
+    ; Add a 47us delay to allow command execution
+    push temp
+    push temp2
+    ldi temp, 5
+lcd_cmd_delay_outer:
+    ldi temp2, 50
+lcd_cmd_delay_inner:
+    dec temp2
+    brne lcd_cmd_delay_inner
+    dec temp
+    brne lcd_cmd_delay_outer
+    pop temp2
+    pop temp
+    ret
+
+; Write data/character to LCD (char in temp)
+lcd_write_data:
+    push temp2
+    ldi temp2, 0x09               ; RS = 1, BL = 1 (backlight ON)
+    rcall lcd_write_byte
+    pop temp2
+    ret
+
+; Write a byte in 4-bit mode (temp = data byte, temp2 = control flags RS | BL)
+lcd_write_byte:
+    push r18
+    push r19
+    mov r18, temp                 ; save byte
+    mov r19, temp2                ; save control flags
+    
+    ; Send High Nibble
+    mov temp, r18
+    andi temp, 0xF0               ; keep high nibble
+    or temp, r19                  ; merge RS and BL
+    rcall lcd_write_nibble
+    
+    ; Send Low Nibble
+    mov temp, r18
+    swap temp                     ; swap nibbles
+    andi temp, 0xF0               ; keep low nibble
+    or temp, r19                  ; merge RS and BL
+    rcall lcd_write_nibble
+    
+    pop r19
+    pop r18
+    ret
+
+; Writes a single nibble to the PCF8574 and pulses the Enable (EN) pin
+; Input: temp = data (bits 4-7) and control flags (bits 0-3, bit 2 is EN)
+lcd_write_nibble:
+    rcall i2c_start
+    ldi temp2, LCD_I2C_ADDR       ; PCF8574 write address
+    push temp
+    mov temp, temp2
+    rcall i2c_write_byte
+    pop temp
+    
+    ; Send with EN = 1
+    push temp
+    ori temp, 0x04                ; Set EN (bit 2) = 1
+    rcall i2c_write_byte
+    pop temp
+    
+    ; Send with EN = 0 (latch data on falling edge)
+    push temp
+    andi temp, ~0x04              ; Set EN (bit 2) = 0
+    rcall i2c_write_byte
+    pop temp
+    
+    rcall i2c_stop
+    ret
+
+; Initialize LCD in I2C mode using PCF8574 backpack 4-bit initialization sequence
+LCD_Init:
+    ; Configure PC4 and PC5 as open-drain (PORT=0, DDR=0 for high impedance)
+    cbi DDRC, LCD_SDA
+    cbi DDRC, LCD_SCL
+    cbi PORTC, LCD_SDA
+    cbi PORTC, LCD_SCL
+
+    ; Wait for power stabilization (> 15ms)
+    ldi temp, 50
+    rcall delay_ms
+
+    ; 4-bit initialization sequence for HD44780
+    ; 1. Send 0x30 as a nibble (set 8-bit mode)
+    ldi temp, 0x30 | 0x08         ; BL = 1
+    rcall lcd_write_nibble
+    ldi temp, 5
+    rcall delay_ms                ; wait > 4.1ms
+
+    ; 2. Send 0x30 as a nibble
+    ldi temp, 0x30 | 0x08
+    rcall lcd_write_nibble
+    ldi temp, 1
+    rcall delay_ms                ; wait > 100us
+
+    ; 3. Send 0x30 as a nibble
+    ldi temp, 0x30 | 0x08
+    rcall lcd_write_nibble
+    ldi temp, 1
+    rcall delay_ms
+
+    ; 4. Send 0x20 as a nibble to switch display to 4-bit mode
+    ldi temp, 0x20 | 0x08
+    rcall lcd_write_nibble
+    ldi temp, 1
+    rcall delay_ms
+
+    ; Function Set: 4-bit mode, 2 lines, 5x8 font (command 0x28)
+    ldi temp, 0x28
+    rcall lcd_write_cmd
+
+    ; Display ON, cursor OFF (command 0x0C)
+    ldi temp, 0x0C
+    rcall lcd_write_cmd
+
+    ; Entry Mode: Auto-increment (command 0x06)
+    ldi temp, 0x06
+    rcall lcd_write_cmd
+
+    rcall LCD_Clear
+    ret
+
+; Clear LCD display
+LCD_Clear:
+    ldi temp, LCD_CMD_CLEAR       ; 0x01
+    rcall lcd_write_cmd
+    ldi temp, 2
+    rcall delay_ms
+    ret
+
+.else
+
+; =========================================================================
+; --- NATIVE ST7032 I2C LCD DRIVER (SIMULIDE SIMULATION) ---
+; =========================================================================
+
 ; Write command to LCD (command in temp)
 lcd_write_cmd:
     rcall i2c_start
@@ -10,6 +161,20 @@ lcd_write_cmd:
     pop temp
     rcall i2c_write_byte  ; send command
     rcall i2c_stop
+    
+    ; Add a 47us delay to allow command execution
+    push temp
+    push temp2
+    ldi temp, 5
+lcd_cmd_delay_outer:
+    ldi temp2, 50
+lcd_cmd_delay_inner:
+    dec temp2
+    brne lcd_cmd_delay_inner
+    dec temp
+    brne lcd_cmd_delay_outer
+    pop temp2
+    pop temp
     ret
 
 ; Write data/character to LCD (char in temp)
@@ -34,8 +199,8 @@ LCD_Init:
     cbi PORTC, LCD_SDA
     cbi PORTC, LCD_SCL
 
-    ; Wait for power stabilization
-    ldi temp, 20
+    ; Wait for power stabilization (> 15ms)
+    ldi temp, 50
     rcall delay_ms
 
     ; Function set (8-bit mode, 2 lines, 5x8 font)
@@ -72,6 +237,8 @@ LCD_Clear:
     ldi temp, 2
     rcall delay_ms
     ret
+
+.endif
 
 ; Set cursor position (temp = row 0 or 1, temp2 = col 0 to 15)
 LCD_Set_Cursor:

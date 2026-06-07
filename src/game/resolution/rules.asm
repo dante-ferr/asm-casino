@@ -41,16 +41,23 @@ normal_resolution_start:
     brne check_normal_win
     
     ; Winning number is 0!
-    ; Zero drawn on External Bet (Type = 1) -> goes to En Prison
+    ; Zero drawn on External Bet (Type = 1) -> goes to En Prison if Chance Simple
     ldd temp, Z+3           ; Bet type
     cpi temp, 1             ; External?
     brne zero_internal_check
+    
+    ldd temp, Z+4           ; Bet target
+    cpi temp, 6
+    brsh zero_doz_col_lose  ; Dozens and Columns lose on 0!
     
     ; Imprison the bet (set En Prison status flag)
     ldd temp, Z+2
     ori temp, 1             ; Set bit 0 (En Prison flag)
     std Z+2, temp
     rjmp resolution_done    ; Bet value remains locked in OFS_BET_VAL
+
+zero_doz_col_lose:
+    rjmp clear_bet_after_spin
     
 zero_internal_check:
     ; Zero drawn on Internal Bet -> check if target is number 0
@@ -75,7 +82,12 @@ check_normal_win_won:
     ldd temp, Z+3
     cpi temp, 1             ; External?
     brne win_internal_35to1
-    rjmp win_external_1to1  ; safe jump to win_external_1to1
+    
+    ; External win: check if Chance Simple (< 6) or Dozen/Column (>= 6)
+    ldd temp, Z+4           ; Bet target
+    cpi temp, 6
+    brsh win_external_2to1  ; target >= 6 -> Payout 2 to 1!
+    rjmp win_external_1to1  ; Else payout 1 to 1
     
 win_internal_35to1:
     ; Payout 35 to 1: Add (bet_value * 36) to balance (original bet + 35x payout)
@@ -107,6 +119,24 @@ win_external_1to1:
     
     mov r22, r24
     mov r23, r25
+    
+    rcall Player_Get_Balance ; returns balance in r25:r24
+    add r24, r22
+    adc r25, r23
+    rcall Player_Set_Balance
+    rjmp clear_bet_after_spin
+
+win_external_2to1:
+    ; Payout 2 to 1: Add (bet_value * 3) to balance (original bet + 2x payout)
+    ldd r25, Z+5
+    ldd r24, Z+6            ; r25:r24 = bet_value
+    
+    mov r22, r24
+    mov r23, r25            ; r23:r22 = bet_value
+    lsl r22
+    rol r23                 ; r23:r22 = bet_value * 2
+    add r22, r24
+    adc r23, r25            ; r23:r22 = bet_value * 3
     
     rcall Player_Get_Balance ; returns balance in r25:r24
     add r24, r22
@@ -177,11 +207,13 @@ Check_Bet_Win:
     
     ; Internal bet: wins if winning number (r20) == Target number (temp2)
     cp r20, temp2
-    breq bet_win
+    brne jump_lose_int
+    rjmp bet_win
+jump_lose_int:
     rjmp bet_lose
     
 check_external:
-    ; External bet categories (temp2 = 0 to 5)
+    ; External bet categories (temp2 = 0 to 11)
     cpi temp2, 0            ; Red
     brne check_black
     
@@ -189,7 +221,9 @@ check_external:
     mov r21, r20
     rcall get_number_color  ; returns color in r21 (0=G, 1=R, 2=B)
     cpi r21, COLOR_RED      ; Red?
-    breq bet_win
+    brne jump_lose_red
+    rjmp bet_win
+jump_lose_red:
     rjmp bet_lose
     
 check_black:
@@ -200,7 +234,9 @@ check_black:
     mov r21, r20
     rcall get_number_color
     cpi r21, COLOR_BLACK    ; Black?
-    breq bet_win
+    brne jump_lose_black
+    rjmp bet_win
+jump_lose_black:
     rjmp bet_lose
     
 check_even:
@@ -209,10 +245,12 @@ check_even:
     
     ; Even: N is even and N > 0
     tst r20
-    breq bet_lose
+    breq jump_lose_even
     mov r21, r20
     andi r21, 1
-    breq bet_win            ; LSB is 0 -> even
+    brne jump_lose_even     ; LSB is 1 -> odd -> lose
+    rjmp bet_win
+jump_lose_even:
     rjmp bet_lose
     
 check_odd:
@@ -221,10 +259,12 @@ check_odd:
     
     ; Odd: N is odd and N > 0
     tst r20
-    breq bet_lose
+    breq jump_lose_odd
     mov r21, r20
     andi r21, 1
-    brne bet_win            ; LSB is 1 -> odd
+    breq jump_lose_odd      ; LSB is 0 -> even -> lose
+    rjmp bet_win
+jump_lose_odd:
     rjmp bet_lose
     
 check_low:
@@ -233,18 +273,98 @@ check_low:
     
     ; Low: N >= 1 and N <= 18
     tst r20
-    breq bet_lose
+    breq jump_lose_low
     cpi r20, 19
-    brlo bet_win            ; < 19 means <= 18
+    brsh jump_lose_low      ; >= 19 -> lose
+    rjmp bet_win
+jump_lose_low:
     rjmp bet_lose
     
 check_high:
     cpi temp2, 5            ; High (19-36)
-    brne bet_lose
+    brne check_doz1
     
     ; High: N >= 19 and N <= 36
     cpi r20, 19
-    brsh bet_win            ; >= 19
+    brlo jump_lose_high     ; < 19 -> lose
+    rjmp bet_win
+jump_lose_high:
+    rjmp bet_lose
+
+check_doz1:
+    cpi temp2, 6            ; 1st Dozen (1-12)
+    brne check_doz2
+    
+    ; 1 <= N <= 12
+    tst r20
+    breq jump_lose_doz1
+    cpi r20, 13
+    brsh jump_lose_doz1     ; >= 13 -> lose
+    rjmp bet_win
+jump_lose_doz1:
+    rjmp bet_lose
+
+check_doz2:
+    cpi temp2, 7            ; 2nd Dozen (13-24)
+    brne check_doz3
+    
+    ; 13 <= N <= 24
+    cpi r20, 13
+    brlo jump_lose_doz2     ; < 13 -> lose
+    cpi r20, 25
+    brsh jump_lose_doz2     ; >= 25 -> lose
+    rjmp bet_win
+jump_lose_doz2:
+    rjmp bet_lose
+
+check_doz3:
+    cpi temp2, 8            ; 3rd Dozen (25-36)
+    brne check_col1
+    
+    ; 25 <= N <= 36
+    cpi r20, 25
+    brlo jump_lose_doz3     ; < 25 -> lose
+    cpi r20, 37
+    brsh jump_lose_doz3     ; >= 37 -> lose
+    rjmp bet_win
+jump_lose_doz3:
+    rjmp bet_lose
+
+check_col1:
+    cpi temp2, 9            ; Column 1
+    brne check_col2
+    ldi r22, 1
+    rjmp check_col_generic
+
+check_col2:
+    cpi temp2, 10           ; Column 2
+    brne check_col3
+    ldi r22, 2
+    rjmp check_col_generic
+
+check_col3:
+    cpi temp2, 11           ; Column 3
+    brne jump_lose_col
+    ldi r22, 0
+    rjmp check_col_generic
+jump_lose_col:
+    rjmp bet_lose
+
+check_col_generic:
+    tst r20
+    breq jump_lose_colg
+    mov r21, r20
+    sub r21, r22
+check_col_mod3:
+    cpi r21, 3
+    brlo check_col_mod3_done
+    subi r21, 3
+    rjmp check_col_mod3
+check_col_mod3_done:
+    tst r21
+    brne jump_lose_colg     ; not zero -> lose
+    rjmp bet_win
+jump_lose_colg:
     rjmp bet_lose
     
 bet_win:

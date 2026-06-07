@@ -36,11 +36,9 @@ wait_adc:
     cpc r25, temp
     brsh btn_b
 
-    ; Button A (Next): ADC < BTN_THRES_A
-    cpi r24, low(BTN_THRES_A)
-    ldi temp, high(BTN_THRES_A)
-    cpc r25, temp
-    brlo btn_a
+    ; Button A (Next): Any value < BTN_THRES_B (no gap)
+    ldi temp, 1
+    ret
 
 btn_none:
     ldi temp, 0
@@ -50,7 +48,4 @@ btn_select:
     ret
 btn_b:
     ldi temp, 2
-    ret
-btn_a:
-    ldi temp, 1
     ret

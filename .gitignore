@@ -5,3 +5,4 @@ src/*.eep.hex
 src/*.eep
 src/*.cof
 src/*.lst
+local

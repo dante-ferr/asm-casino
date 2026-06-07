@@ -133,10 +133,9 @@
 .equ COLOR_BLACK               = 2
 
 ; Hardware Button Analog Thresholds (Resistor Ladder)
-.equ BTN_THRES_NONE            = 900
-.equ BTN_THRES_SELECT          = 650
-.equ BTN_THRES_B               = 450
-.equ BTN_THRES_A               = 150
+.equ BTN_THRES_NONE            = 860
+.equ BTN_THRES_SELECT          = 610
+.equ BTN_THRES_B               = 350
 
 ; Target hardware environment switch
 ; Set to 0 for SimulIDE simulation (uses native ST7032 I2C display)

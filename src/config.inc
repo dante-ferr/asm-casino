@@ -72,7 +72,6 @@
 
 ; Variaveis Globais na SRAM
 .equ RAM_ROUND_NUM = 0x0140 ; Numero sorteado
-.equ RAM_GLOB_HIST = 0x0141 ; Historico geral (5 bytes)
 .equ RAM_SEED_L    = 0x0146 ; Seed do PRNG (LSB)
 .equ RAM_SEED_H    = 0x0147 ; Seed do PRNG (MSB)
 .equ RAM_SYS_TICKS = 0x0148 ; Contador de milissegundos (1 byte)

@@ -1,4 +1,4 @@
-; FSM State: Set Credits Screen and Logic
+; Estado da FSM: Tela e lógica de configuração de créditos
 
 Run_Set_Credits:
     rcall Show_Credits_Menu
@@ -7,19 +7,19 @@ set_credits_loop:
     push temp
     
     pop temp
-    cpi temp, 1            ; Button A -> Add 100 points
+    cpi temp, 1 ; Botão A -> adiciona 100 pontos
     brne set_credits_b
     
-    ; Get current balance (r25:r24)
+    ; Lê o saldo atual (r25:r24)
     rcall Player_Get_Balance
     
-    ; Check maximum limit
+    ; Verifica o limite máximo
     cpi r24, low(CREDIT_MAX_LIMIT)
     ldi temp2, high(CREDIT_MAX_LIMIT)
     cpc r25, temp2
-    brsh set_credits_tick   ; Skip addition if already at max limit
+    brsh set_credits_tick ; ignora a adição se já estiver no limite máximo
     
-    ; Add CREDIT_STEP points
+    ; Adiciona os pontos do passo de crédito
     ldi temp2, low(CREDIT_STEP)
     add r24, temp2
     ldi temp2, high(CREDIT_STEP)
@@ -32,19 +32,19 @@ set_credits_tick:
     rjmp set_credits_loop
     
 set_credits_b:
-    cpi temp, 2            ; Button B -> Subtract 100 points
+    cpi temp, 2 ; Botão B -> subtrai 100 pontos
     brne set_credits_select
     
-    ; Get current balance (r25:r24)
+    ; Lê o saldo atual (r25:r24)
     rcall Player_Get_Balance
     
-    ; Check minimum limit
+    ; Verifica o limite mínimo
     cpi r24, low(CREDIT_MIN_LIMIT)
     ldi temp2, high(CREDIT_MIN_LIMIT)
     cpc r25, temp2
-    breq set_credits_tick   ; Skip subtraction if already at min limit
+    breq set_credits_tick ; ignora a subtração se já estiver no limite mínimo
     
-    ; Subtract CREDIT_STEP points
+    ; Subtrai os pontos do passo de crédito
     ldi temp2, low(CREDIT_STEP)
     sub r24, temp2
     ldi temp2, high(CREDIT_STEP)
@@ -53,17 +53,17 @@ set_credits_b:
     rjmp set_credits_tick
     
 set_credits_select:
-    cpi temp, 3            ; Button Select -> Confirm and return to Main Menu
+    cpi temp, 3 ; Botão Select -> confirma e retorna ao Menu Principal
     brne set_credits_loop
     
-    ; Play confirmation beep
+    ; Toca o bipe de confirmação
     rcall Buzzer_Beep
     
-    ; Switch state back to Main Menu
+    ; Retorna para o estado do Menu Principal
     ldi fsm_state, STATE_MAIN_MENU
     ret
 
-; Show player credit configuration screen
+; Exibe a tela de configuração de créditos do jogador
 Show_Credits_Menu:
     push temp
     push temp2
@@ -72,14 +72,14 @@ Show_Credits_Menu:
     push ZL
     push ZH
     
-    ; Draw dollar sign icon on LED matrix
+    ; Desenha o ícone de cifrão na matriz de LEDs
     ldi ZL, low(icon_dollar * 2)
     ldi ZH, high(icon_dollar * 2)
     rcall Matrix_Draw_Icon
     
     rcall LCD_Clear
     
-    ; Line 0: "P[ID] Set Bal: [Val]"
+    ; Linha 0
     ldi temp, 0
     ldi temp2, 0
     rcall LCD_Set_Cursor
@@ -95,10 +95,10 @@ Show_Credits_Menu:
     ldi ZH, high(msg_set_bal_label * 2)
     rcall LCD_Print_Msg
     
-    rcall Player_Get_Balance ; returns balance in r25:r24
+    rcall Player_Get_Balance ; retorna o saldo em r25:r24
     rcall LCD_Print_Dec16
     
-    ; Line 1: "A:+100 B:-100 S:OK"
+    ; Linha 1
     ldi temp, 1
     ldi temp2, 0
     rcall LCD_Set_Cursor

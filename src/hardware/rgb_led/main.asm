@@ -1,7 +1,7 @@
-; RGB LED driver (Red, Black/Blue, Green)
-; Controls PD1 (Green), PD2 (Red), PD3 (Blue/Black)
+; Driver do LED RGB (Vermelho, Preto/Azul, Verde)
+; Controla os pinos PD1 (Verde), PD2 (Vermelho), PD3 (Azul/Preto)
 
-; Turn off all channels of the RGB LED
+; Apaga todas as cores do LED RGB
 RGB_Clear:
     cbi PORTD, RGB_GREEN
     cbi PORTD, RGB_RED

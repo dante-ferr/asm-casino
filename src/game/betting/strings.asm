@@ -1,4 +1,4 @@
-; Betting strings and tables
+; Strings e tabelas para a fase de apostas
 
 msg_bet_val_label:  .db "Apos:", 0
 msg_bet_keys_label: .db " (A/B/S)", 0, 0

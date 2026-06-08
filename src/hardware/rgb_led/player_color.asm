@@ -1,11 +1,11 @@
-; Set RGB LED color according to active player (1 to 4)
-; Inputs:
-;   temp = active_plyr (1 to 4)
-; Colors:
-;   P1: Red
-;   P2: Blue (mapped to RGB_BLACK pin)
-;   P3: Green
-;   P4: Yellow (Red + Green)
+; Configura a cor do LED RGB com base no jogador ativo (de 1 a 4)
+; Entradas:
+;   temp = jogador ativo (de 1 a 4)
+; Cores correspondentes:
+;   Jogador 1: Vermelho
+;   Jogador 2: Azul (mapeado no pino RGB_BLACK)
+;   Jogador 3: Verde
+;   Jogador 4: Amarelo (Vermelho + Verde)
 RGB_Set_By_Player:
     push temp
     

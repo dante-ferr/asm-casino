@@ -1,5 +1,5 @@
-; LCD I2C Display Driver (AIP31068 controller) via Bit-Banging
-; Pins used: SDA on PC4, SCL on PC5
+; Driver do display LCD I2C (controlador AIP31068) via Bit-Banging
+; Pinos usados: SDA no PC4, SCL no PC5
 
 .include "hardware/lcd_i2c/i2c.asm"
 .include "hardware/lcd_i2c/lcd.asm"

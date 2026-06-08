@@ -1,9 +1,9 @@
-; French Roulette game rules and payout calculations ("En Prison")
-; Handles bet win verification, normal payouts, and En Prison locking logic.
+; Regras do jogo de Roleta Francesa e cálculo de pagamentos ("En Prison")
+; Controla a verificação de vitórias, pagamentos normais e regras da prisão.
 
-; Calculate win/loss and update player balance based on drawn result
-; Inputs: None (reads active_plyr, RAM_ROUND_NUM, and player data in SRAM)
-; Outputs: Updates player balance and En Prison status in SRAM.
+; Calcula vitória/derrota e atualiza o saldo do jogador com base no resultado
+; Entradas: Nenhuma (lê active_plyr, RAM_ROUND_NUM e dados do jogador na SRAM)
+; Saídas: Atualiza o saldo do jogador e status da prisão na SRAM.
 Calculate_Payout:
     push temp
     push temp2
@@ -16,86 +16,85 @@ Calculate_Payout:
     push ZL
     push ZH
     
-    ; 1. Get active player pointer in SRAM (Z)
+    ; Obtém o ponteiro do jogador ativo na SRAM (Z)
     rcall Player_Get_Pointer
     
-    ; 2. Check if player is currently En Prison (status bit 0)
-    ldd temp, Z+2           ; Load Status Byte
-    sbrc temp, 0            ; Skip if bit 0 is 0 (not En Prison)
+    ; Verifica se o jogador está atualmente na prisão (bit 0 do status)
+    ldd temp, Z+2 ; carrega o byte de status
+    sbrc temp, 0 ; pula se o bit 0 for 0 (não está na prisão)
     rjmp resolution_prison
     
-    ; --- NORMAL RESOLUTION ---
-    lds r20, RAM_ROUND_NUM  ; r20 = winning number (0-36)
+    ; --- RESOLUÇÃO NORMAL ---
+    lds r20, RAM_ROUND_NUM ; número sorteado (0-36)
     
-    ; Get bet value
-    ldd r25, Z+5            ; Bet value High byte
-    ldd r24, Z+6            ; Bet value Low byte
+    ; Lê o valor da aposta
+    ldd r25, Z+5 ; parte alta da aposta
+    ldd r24, Z+6 ; parte baixa da aposta
     mov temp, r24
     or temp, r25
     brne normal_resolution_start
-    rjmp resolution_done    ; If bet value is 0, no bet to resolve (safe jump)
+    rjmp resolution_done ; se o valor for 0, encerra sem resolver
 normal_resolution_start:
     
-    ; Check if winning number is 0
+    ; Verifica se o número sorteado é 0
     tst r20
     brne check_normal_win
     
-    ; Winning number is 0!
-    ; Zero drawn on External Bet (Type = 1) -> goes to En Prison if Chance Simple
-    ldd temp, Z+3           ; Bet type
-    cpi temp, 1             ; External?
+    ; Zero sorteado em aposta externa -> vai para a prisão se for Chance Simples
+    ldd temp, Z+3 ; tipo de aposta
+    cpi temp, 1 ; Externa?
     brne zero_internal_check
     
-    ldd temp, Z+4           ; Bet target
+    ldd temp, Z+4 ; alvo da aposta
     cpi temp, 6
-    brsh zero_doz_col_lose  ; Dozens and Columns lose on 0!
+    brsh zero_doz_col_lose ; dúzias e colunas perdem no 0
     
-    ; Imprison the bet (set En Prison status flag)
+    ; Prende a aposta (ativa flag da prisão)
     ldd temp, Z+2
-    ori temp, 1             ; Set bit 0 (En Prison flag)
+    ori temp, 1 ; ativa o bit 0
     std Z+2, temp
-    rjmp resolution_done    ; Bet value remains locked in OFS_BET_VAL
-
+    rjmp resolution_done ; o valor da aposta fica retido
+ 
 zero_doz_col_lose:
     rjmp clear_bet_after_spin
     
 zero_internal_check:
-    ; Zero drawn on Internal Bet -> check if target is number 0
-    ldd temp2, Z+4          ; Bet target
+    ; Zero sorteado em aposta interna -> verifica se o alvo é o número 0
+    ldd temp2, Z+4 ; alvo da aposta
     tst temp2
-    breq win_internal_zero  ; target is 0 -> wins!
-    rjmp clear_bet_after_spin ; target is not 0 -> lost!
+    breq win_internal_zero ; alvo é 0 -> vitória
+    rjmp clear_bet_after_spin ; alvo não é 0 -> derrota
 win_internal_zero:
     rjmp win_internal_35to1
     
 check_normal_win:
-    ldd temp, Z+3           ; Bet type (0=Int, 1=Ext)
-    ldd temp2, Z+4          ; Bet target
-    rcall Check_Bet_Win     ; Returns temp = 1 (Win) or 0 (Loss)
+    ldd temp, Z+3 ; tipo de aposta
+    ldd temp2, Z+4 ; alvo da aposta
+    rcall Check_Bet_Win ; retorna temp = 1 (Vitória) ou 0 (Derrota)
     
     tst temp
     brne check_normal_win_won
-    rjmp clear_bet_after_spin ; Loss -> do nothing to balance, clear bet (safe jump)
+    rjmp clear_bet_after_spin ; derrota -> limpa a aposta
 check_normal_win_won:
     
-    ; Win! Determine multiplier based on bet type
+    ; Vitória! Determina o multiplicador com base no tipo de aposta
     ldd temp, Z+3
-    cpi temp, 1             ; External?
+    cpi temp, 1 ; Externa?
     brne win_internal_35to1
     
-    ; External win: check if Chance Simple (< 6) or Dozen/Column (>= 6)
-    ldd temp, Z+4           ; Bet target
+    ; Vitória externa: verifica se é Chance Simples ou Dúzia/Coluna
+    ldd temp, Z+4 ; alvo da aposta
     cpi temp, 6
-    brsh win_external_2to1  ; target >= 6 -> Payout 2 to 1!
-    rjmp win_external_1to1  ; Else payout 1 to 1
+    brsh win_external_2to1 ; alvo >= 6 -> pagamento de 2 para 1
+    rjmp win_external_1to1 ; senão, pagamento de 1 para 1
     
 win_internal_35to1:
-    ; Payout 35 to 1: Add (bet_value * 36) to balance (original bet + 35x payout)
+    ; Pagamento de 35 para 1: adiciona 36 vezes o valor apostado
     ldd r25, Z+5
-    ldd r24, Z+6            ; r25:r24 = bet_value
+    ldd r24, Z+6 ; valor apostado
     
     clr r22
-    clr r23                 ; r23:r22 = multiplier accumulator
+    clr r23 ; acumulador da multiplicação
     ldi temp, MULTIPLIER_INTERNAL_TOTAL
 payout_mul_loop:
     add r22, r24
@@ -103,76 +102,76 @@ payout_mul_loop:
     dec temp
     brne payout_mul_loop
     
-    ; Add to player balance
-    rcall Player_Get_Balance ; returns balance in r25:r24
+    ; Adiciona ao saldo do jogador
+    rcall Player_Get_Balance ; retorna o saldo em r25:r24
     add r24, r22
     adc r25, r23
     rcall Player_Set_Balance
     rjmp clear_bet_after_spin
     
 win_external_1to1:
-    ; Payout 1 to 1: Add (bet_value * 2) to balance (original bet + 1x payout)
+    ; Pagamento de 1 para 1: adiciona 2 vezes o valor apostado
     ldd r25, Z+5
     ldd r24, Z+6
     lsl r24
-    rol r25                 ; r25:r24 = bet_value * 2
+    rol r25 ; multiplica por 2
     
     mov r22, r24
     mov r23, r25
     
-    rcall Player_Get_Balance ; returns balance in r25:r24
+    rcall Player_Get_Balance ; retorna o saldo em r25:r24
     add r24, r22
     adc r25, r23
     rcall Player_Set_Balance
     rjmp clear_bet_after_spin
-
+ 
 win_external_2to1:
-    ; Payout 2 to 1: Add (bet_value * 3) to balance (original bet + 2x payout)
+    ; Pagamento de 2 para 1: adiciona 3 vezes o valor apostado
     ldd r25, Z+5
-    ldd r24, Z+6            ; r25:r24 = bet_value
+    ldd r24, Z+6 ; valor apostado
     
     mov r22, r24
-    mov r23, r25            ; r23:r22 = bet_value
+    mov r23, r25 ; valor apostado
     lsl r22
-    rol r23                 ; r23:r22 = bet_value * 2
+    rol r23 ; multiplica por 2
     add r22, r24
-    adc r23, r25            ; r23:r22 = bet_value * 3
+    adc r23, r25 ; soma mais uma vez
     
-    rcall Player_Get_Balance ; returns balance in r25:r24
+    rcall Player_Get_Balance ; retorna o saldo em r25:r24
     add r24, r22
     adc r25, r23
     rcall Player_Set_Balance
     rjmp clear_bet_after_spin
     
-    ; --- EN PRISON RESOLUTION ---
+    ; --- RESOLUÇÃO DA PRISÃO ---
 resolution_prison:
-    ; Get bet details
-    ldd temp, Z+3           ; Bet type (External)
-    ldd temp2, Z+4          ; Bet target
-    ldd r23, Z+5            ; Bet value High byte
-    ldd r22, Z+6            ; Bet value Low byte
+    ; Lê os detalhes da aposta
+    ldd temp, Z+3 ; tipo da aposta (Externa)
+    ldd temp2, Z+4 ; alvo da aposta
+    ldd r23, Z+5 ; parte alta da aposta
+    ldd r22, Z+6 ; parte baixa da aposta
     
-    ; Check if winning number (RAM_ROUND_NUM) wins for this bet
+    ; Verifica se o número sorteado ganha a aposta
     lds r20, RAM_ROUND_NUM
-    rcall Check_Bet_Win     ; returns temp = 1 (Win) or 0 (Loss)
+    rcall Check_Bet_Win ; retorna temp = 1 (Vitória) ou 0 (Derrota)
     
     tst temp
     breq prison_lost
     
-    ; Prison Win: Return original bet value back to the balance
-    rcall Player_Get_Balance ; returns balance in r25:r24
+    ; Vitória na Prisão: devolve o valor apostado para o saldo
+    rcall Player_Get_Balance ; retorna o saldo em r25:r24
     add r24, r22
     adc r25, r23
     rcall Player_Set_Balance
     
 prison_lost:
-    ; Clean prison state: clear En Prison flag and clear bet value
+    ; Limpa o estado de prisão: desativa flag e limpa valor da aposta
     ldd temp, Z+2
-    andi temp, ~1           ; Clear bit 0 (En Prison flag)
+    andi temp, ~1 ; desativa o bit 0
     std Z+2, temp
     
 clear_bet_after_spin:
-    ; Clear current bet value
+    ; Limpa o valor da aposta atual
     ldi temp, 0
     std Z+5, temp
     std Z+6, temp
@@ -190,22 +189,22 @@ resolution_done:
     pop temp
     ret
 
-; Check if a winning number wins for a bet
-; Inputs:
-;   r20 = winning number (0-36)
-;   temp = bet type (0 = Internal, 1 = External)
-;   temp2 = bet target (number 0-36 or category 0-5)
-; Outputs:
-;   temp = 1 if Win, 0 if Loss
+; Verifica se o número sorteado ganha a aposta
+; Entradas:
+;   r20 = número sorteado (0-36)
+;   temp = tipo de aposta (0 = Interna, 1 = Externa)
+;   temp2 = alvo da aposta (número 0-36 ou categoria 0-5)
+; Saídas:
+;   temp = 1 se ganhar, 0 se perder
 Check_Bet_Win:
     push temp2
     push r21
     push r22
     
-    cpi temp, 0             ; Internal?
+    cpi temp, 0 ; Interna?
     brne check_external
     
-    ; Internal bet: wins if winning number (r20) == Target number (temp2)
+    ; Aposta interna: ganha se o número sorteado (r20) for igual ao alvo (temp2)
     cp r20, temp2
     brne jump_lose_int
     rjmp bet_win
@@ -213,137 +212,137 @@ jump_lose_int:
     rjmp bet_lose
     
 check_external:
-    ; External bet categories (temp2 = 0 to 11)
-    cpi temp2, 0            ; Red
+    ; Categorias de apostas externas (temp2 de 0 a 11)
+    cpi temp2, 0 ; Vermelho?
     brne check_black
     
-    ; Red: check if color of winning number is Red (COLOR_RED)
+    ; Vermelho: verifica se a cor do número sorteado é Vermelho
     mov r21, r20
-    rcall get_number_color  ; returns color in r21 (0=G, 1=R, 2=B)
-    cpi r21, COLOR_RED      ; Red?
+    rcall get_number_color ; retorna a cor em r21
+    cpi r21, COLOR_RED ; Vermelho?
     brne jump_lose_red
     rjmp bet_win
 jump_lose_red:
     rjmp bet_lose
     
 check_black:
-    cpi temp2, 1            ; Black
+    cpi temp2, 1 ; Azul/Preto?
     brne check_even
     
-    ; Black: check if color of winning number is Black (COLOR_BLACK)
+    ; Preto: verifica se a cor do número sorteado é Preto
     mov r21, r20
     rcall get_number_color
-    cpi r21, COLOR_BLACK    ; Black?
+    cpi r21, COLOR_BLACK ; Preto?
     brne jump_lose_black
     rjmp bet_win
 jump_lose_black:
     rjmp bet_lose
     
 check_even:
-    cpi temp2, 2            ; Even
+    cpi temp2, 2 ; Par?
     brne check_odd
     
-    ; Even: N is even and N > 0
+    ; Par: N é par e N > 0
     tst r20
     breq jump_lose_even
     mov r21, r20
     andi r21, 1
-    brne jump_lose_even     ; LSB is 1 -> odd -> lose
+    brne jump_lose_even ; LSB igual a 1 significa ímpar -> perde
     rjmp bet_win
 jump_lose_even:
     rjmp bet_lose
     
 check_odd:
-    cpi temp2, 3            ; Odd
+    cpi temp2, 3 ; Ímpar?
     brne check_low
     
-    ; Odd: N is odd and N > 0
+    ; Ímpar: N é ímpar e N > 0
     tst r20
     breq jump_lose_odd
     mov r21, r20
     andi r21, 1
-    breq jump_lose_odd      ; LSB is 0 -> even -> lose
+    breq jump_lose_odd ; LSB igual a 0 significa par -> perde
     rjmp bet_win
 jump_lose_odd:
     rjmp bet_lose
     
 check_low:
-    cpi temp2, 4            ; Low (1-18)
+    cpi temp2, 4 ; Baixo (1-18)?
     brne check_high
     
-    ; Low: N >= 1 and N <= 18
+    ; Baixo: 1 <= N <= 18
     tst r20
     breq jump_lose_low
     cpi r20, 19
-    brsh jump_lose_low      ; >= 19 -> lose
+    brsh jump_lose_low ; >= 19 -> perde
     rjmp bet_win
 jump_lose_low:
     rjmp bet_lose
     
 check_high:
-    cpi temp2, 5            ; High (19-36)
+    cpi temp2, 5 ; Alto (19-36)?
     brne check_doz1
     
-    ; High: N >= 19 and N <= 36
+    ; Alto: 19 <= N <= 36
     cpi r20, 19
-    brlo jump_lose_high     ; < 19 -> lose
+    brlo jump_lose_high ; < 19 -> perde
     rjmp bet_win
 jump_lose_high:
     rjmp bet_lose
 
 check_doz1:
-    cpi temp2, 6            ; 1st Dozen (1-12)
+    cpi temp2, 6 ; primeira dúzia (1-12)?
     brne check_doz2
     
-    ; 1 <= N <= 12
+    ; primeira dúzia: 1 <= N <= 12
     tst r20
     breq jump_lose_doz1
     cpi r20, 13
-    brsh jump_lose_doz1     ; >= 13 -> lose
+    brsh jump_lose_doz1 ; >= 13 -> perde
     rjmp bet_win
 jump_lose_doz1:
     rjmp bet_lose
 
 check_doz2:
-    cpi temp2, 7            ; 2nd Dozen (13-24)
+    cpi temp2, 7 ; segunda dúzia (13-24)?
     brne check_doz3
     
-    ; 13 <= N <= 24
+    ; segunda dúzia: 13 <= N <= 24
     cpi r20, 13
-    brlo jump_lose_doz2     ; < 13 -> lose
+    brlo jump_lose_doz2 ; < 13 -> perde
     cpi r20, 25
-    brsh jump_lose_doz2     ; >= 25 -> lose
+    brsh jump_lose_doz2 ; >= 25 -> perde
     rjmp bet_win
 jump_lose_doz2:
     rjmp bet_lose
 
 check_doz3:
-    cpi temp2, 8            ; 3rd Dozen (25-36)
+    cpi temp2, 8 ; terceira dúzia (25-36)?
     brne check_col1
     
-    ; 25 <= N <= 36
+    ; terceira dúzia: 25 <= N <= 36
     cpi r20, 25
-    brlo jump_lose_doz3     ; < 25 -> lose
+    brlo jump_lose_doz3 ; < 25 -> perde
     cpi r20, 37
-    brsh jump_lose_doz3     ; >= 37 -> lose
+    brsh jump_lose_doz3 ; >= 37 -> perde
     rjmp bet_win
 jump_lose_doz3:
     rjmp bet_lose
 
 check_col1:
-    cpi temp2, 9            ; Column 1
+    cpi temp2, 9 ; Coluna 1?
     brne check_col2
     ldi r22, 1
     rjmp check_col_generic
 
 check_col2:
-    cpi temp2, 10           ; Column 2
+    cpi temp2, 10 ; Coluna 2?
     brne check_col3
     ldi r22, 2
     rjmp check_col_generic
 
 check_col3:
-    cpi temp2, 11           ; Column 3
+    cpi temp2, 11 ; Coluna 3?
     brne jump_lose_col
     ldi r22, 0
     rjmp check_col_generic
@@ -362,7 +361,7 @@ check_col_mod3:
     rjmp check_col_mod3
 check_col_mod3_done:
     tst r21
-    brne jump_lose_colg     ; not zero -> lose
+    brne jump_lose_colg ; not zero -> lose
     rjmp bet_win
 jump_lose_colg:
     rjmp bet_lose
@@ -378,11 +377,11 @@ check_win_ret:
     pop temp2
     ret
 
-; Reads number color from Flash color_table
-; Inputs:
-;   r21 = number (0-36)
-; Outputs:
-;   r21 = color (0=Green, 1=Red, 2=Black)
+; Lê a cor do número na tabela de cores na Flash
+; Entradas:
+;   r21 = número (0-36)
+; Saídas:
+;   r21 = cor (0 = Verde, 1 = Vermelho, 2 = Preto/Azul)
 get_number_color:
     push ZL
     push ZH

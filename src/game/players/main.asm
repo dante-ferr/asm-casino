@@ -1,7 +1,7 @@
-; Player data initialization and management
-; Initializes balances to 1000 points and clears game states for up to 4 players
+; Inicialização e gerenciamento dos dados dos jogadores
+; Inicializa saldos com 1000 pontos e limpa estados do jogo para até 4 jogadores
 
-; Initialize SRAM data for all 4 players
+; Inicializa dados na SRAM para todos os jogadores
 Players_Init:
     push temp
     push temp2
@@ -12,15 +12,15 @@ Players_Init:
     ldi ZL, low(PLAYER_DATA_START)
     ldi ZH, high(PLAYER_DATA_START)
     
-    ldi r20, MAX_PLAYERS              ; Initialize players
+    ldi r20, MAX_PLAYERS ; define o número máximo de jogadores
 players_init_loop:
-    ; 1. Set starting balance to START_BALANCE
-    ldi temp, high(START_BALANCE)     ; Balance High Byte
+    ; Define o saldo inicial de cada jogador
+    ldi temp, high(START_BALANCE) ; parte alta do saldo inicial
     st Z+, temp
-    ldi temp, low(START_BALANCE)      ; Balance Low Byte
+    ldi temp, low(START_BALANCE) ; parte baixa do saldo inicial
     st Z+, temp
     
-    ; 2. Initialize the remaining bytes of the player struct to 0
+    ; Zera os bytes restantes da estrutura do jogador
     ldi temp, PLAYER_SIZE - 2
     ldi temp2, 0
 init_zeros_loop:
@@ -38,11 +38,11 @@ init_zeros_loop:
     pop temp
     ret
 
-; Gets the SRAM pointer to the active player's record
-; Inputs:
-;   active_plyr = player ID (1 to 4)
-; Outputs:
-;   ZH:ZL = SRAM pointer
+; Obtém o ponteiro SRAM para a ficha do jogador ativo
+; Entradas:
+;   active_plyr = ID do jogador (1 a 4)
+; Saídas:
+;   ZH:ZL = ponteiro SRAM
 Player_Get_Pointer:
     push temp
     push temp2
@@ -53,10 +53,10 @@ Player_Get_Pointer:
     
     mov temp, active_plyr
     dec temp
-    breq get_ptr_done       ; If Player 1, offset is 0
+    breq get_ptr_done ; se for o jogador 1, offset é zero
     
-    ldi r24, PLAYER_SIZE             ; bytes per player record
-    clr temp2               ; zero register for carry addition
+    ldi r24, PLAYER_SIZE ; tamanho da estrutura de cada jogador
+    clr temp2 ; limpa registrador para soma de carry
 get_ptr_loop:
     add ZL, r24
     adc ZH, temp2
@@ -69,49 +69,49 @@ get_ptr_done:
     pop temp
     ret
 
-; Get active player's balance
-; Outputs:
-;   r25 = Balance High Byte
-;   r24 = Balance Low Byte
+; Lê o saldo do jogador ativo
+; Saídas:
+;   r25 = parte alta do saldo
+;   r24 = parte baixa do saldo
 Player_Get_Balance:
     push ZL
     push ZH
     rcall Player_Get_Pointer
-    ld r25, Z+              ; Load High Byte (offset 0) and increment
-    ld r24, Z               ; Load Low Byte (offset 1)
+    ld r25, Z+ ; lê a parte alta
+    ld r24, Z ; lê a parte baixa
     pop ZH
     pop ZL
     ret
 
-; Set active player's balance
-; Inputs:
-;   r25 = Balance High Byte
-;   r24 = Balance Low Byte
+; Define o saldo do jogador ativo
+; Entradas:
+;   r25 = parte alta do saldo
+;   r24 = parte baixa do saldo
 Player_Set_Balance:
     push ZL
     push ZH
     rcall Player_Get_Pointer
-    st Z+, r25              ; Store High Byte (offset 0) and increment
-    st Z, r24               ; Store Low Byte (offset 1)
+    st Z+, r25 ; salva a parte alta
+    st Z, r24 ; salva a parte baixa
     pop ZH
     pop ZL
     ret
 
-; Get active player's status byte
-; Outputs:
-;   temp = status byte
+; Lê o byte de status do jogador ativo
+; Saídas:
+;   temp = byte de status
 Player_Get_Status:
     push ZL
     push ZH
     rcall Player_Get_Pointer
-    ldd temp, Z+2           ; Offset 2: Status Byte
+    ldd temp, Z+2 ; byte de status no offset 2
     pop ZH
     pop ZL
     ret
 
-; Set active player's status byte
-; Inputs:
-;   temp = status byte
+; Define o byte de status do jogador ativo
+; Entradas:
+;   temp = byte de status
 Player_Set_Status:
     push ZL
     push ZH
@@ -121,28 +121,28 @@ Player_Set_Status:
     pop ZL
     ret
 
-; Get active player's bet details
-; Outputs:
-;   temp  = bet type (offset 3)
-;   temp2 = bet target (offset 4)
-;   r25:r24 = bet value (offsets 5 and 6)
+; Lê os detalhes da aposta do jogador ativo
+; Saídas:
+;   temp = tipo da aposta
+;   temp2 = alvo da aposta
+;   r25:r24 = valor da aposta
 Player_Get_Bet:
     push ZL
     push ZH
     rcall Player_Get_Pointer
-    ldd temp, Z+3           ; Bet type
-    ldd temp2, Z+4          ; Bet target
-    ldd r25, Z+5            ; Bet value High byte
-    ldd r24, Z+6            ; Bet value Low byte
+    ldd temp, Z+3 ; tipo da aposta
+    ldd temp2, Z+4 ; alvo da aposta
+    ldd r25, Z+5 ; valor da aposta (parte alta)
+    ldd r24, Z+6 ; valor da aposta (parte baixa)
     pop ZH
     pop ZL
     ret
 
-; Set active player's bet details
-; Inputs:
-;   temp  = bet type (offset 3)
-;   temp2 = bet target (offset 4)
-;   r25:r24 = bet value (offsets 5 and 6)
+; Define os detalhes da aposta do jogador ativo
+; Entradas:
+;   temp = tipo da aposta
+;   temp2 = alvo da aposta
+;   r25:r24 = valor da aposta
 Player_Set_Bet:
     push ZL
     push ZH

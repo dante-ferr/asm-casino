@@ -1,4 +1,4 @@
-; Spin and Resolution Specific Strings
+; Strings específicas de giro e resolução
 
 msg_spinning:       .db "Girando roleta.", 0
 msg_p_win_ext:      .db " LIBERADO!+", 0

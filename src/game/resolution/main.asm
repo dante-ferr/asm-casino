@@ -1,7 +1,7 @@
-; Game Spin & Resolution FSM Logic
+; Lógica da FSM para o giro e resolução do jogo
 
 Run_Spin_Roulette:
-    ; 1. Display spinning message
+    ; Exibe a mensagem de giro
     call LCD_Clear
     ldi temp, 0
     ldi temp2, 0
@@ -10,10 +10,10 @@ Run_Spin_Roulette:
     ldi ZH, high(msg_spinning * 2)
     call LCD_Print_Msg
     
-    ; 2. Run modular spin sequence
-    call Run_Roulette_Spin_Sequence ; returns winning number in temp2, saves to RAM_ROUND_NUM
+    ; Executa a sequência de animação do giro
+    call Run_Roulette_Spin_Sequence ; retorna o número sorteado em temp2 e salva em RAM_ROUND_NUM
     
-    ; 3. Transition to resolution
+    ; Transiciona para a resolução
     ldi fsm_state, STATE_RESOLUTION
     ret
 
@@ -25,16 +25,16 @@ Run_Resolution:
     push ZL
     push ZH
     
-    ldi active_plyr, 1     ; Start with Player 1
+    ldi active_plyr, 1 ; começa no jogador 1
 resolution_plyr_loop:
-    call Player_Get_Pointer ; Z points to player
+    call Player_Get_Pointer ; Z aponta para o jogador
     
-    ; Load bet details before Calculate_Payout clears them
-    ldd r23, Z+2            ; status
-    ldd r22, Z+3            ; type
-    ldd r20, Z+4            ; target
-    ldd r19, Z+5            ; val_h
-    ldd r18, Z+6            ; val_l
+    ; Carrega os detalhes da aposta antes que Calculate_Payout os limpe
+    ldd r23, Z+2 ; status
+    ldd r22, Z+3 ; tipo
+    ldd r20, Z+4 ; alvo
+    ldd r19, Z+5 ; valor (byte alto)
+    ldd r18, Z+6 ; valor (byte baixo)
     
     push r23
     push r22
@@ -42,7 +42,7 @@ resolution_plyr_loop:
     push r19
     push r18
     
-    call Calculate_Payout  ; Calculates payout, updates balance & status, clears bet
+    call Calculate_Payout ; calcula o pagamento, atualiza saldo/status e limpa a aposta
     
     pop r18
     pop r19
@@ -50,10 +50,10 @@ resolution_plyr_loop:
     pop r22
     pop r20
     
-    ; 1. Clear LCD
+    ; Limpa o LCD
     call LCD_Clear
     
-    ; 2. Print "P[ID]: " on Line 0
+    ; Imprime o identificador do jogador na linha 0
     ldi temp, 0
     ldi temp2, 0
     call LCD_Set_Cursor
@@ -64,47 +64,47 @@ resolution_plyr_loop:
     subi temp, -'0'
     call lcd_write_data
     
-    ; Check if bet value was 0
+    ; Verifica se o valor da aposta foi 0
     mov temp, r18
     or temp, r19
     brne resolution_has_bet
     
-    ; No bet -> display " PASS"
+    ; Sem aposta -> exibe que o jogador passou
     ldi ZL, low(msg_p_passed * 2)
     ldi ZH, high(msg_p_passed * 2)
     call LCD_Print_Msg
     rjmp resolution_show_balance
     
 resolution_has_bet:
-    ; Check if player was in prison
+    ; Verifica se o jogador estava na prisão
     sbrc r20, 0
     rjmp resolution_was_prison
     
-    ; Was NOT in prison -> check if now in prison
+    ; Não estava na prisão -> verifica se foi para a prisão agora
     call Player_Get_Pointer
     ldd temp, Z+2
     sbrc temp, 0
     rjmp resolution_went_prison
     
-    ; Normal win/loss check
+    ; Verificação normal de vitória ou derrota
     lds r20, RAM_ROUND_NUM
-    mov temp, r22           ; type
-    mov temp2, r23          ; target
-    call Check_Bet_Win     ; returns temp = 1 (Win) or 0 (Loss)
+    mov temp, r22 ; tipo
+    mov temp2, r23 ; alvo
+    call Check_Bet_Win ; retorna temp = 1 (Vitória) ou 0 (Derrota)
     tst temp
     breq resolution_normal_loss
     
-    ; Normal Win!
+    ; Vitória normal!
     call Buzzer_Success
     ldi ZL, low(msg_p_won_prefix * 2)
     ldi ZH, high(msg_p_won_prefix * 2)
     call LCD_Print_Msg
     
-    ; Print win amount
-    cpi r22, 1              ; External?
+    ; Imprime o valor ganho
+    cpi r22, 1 ; Externa?
     breq print_ext_win_val
     
-    ; Internal win: multiply r19:r18 by 35
+    ; Vitória interna: multiplica o valor da aposta por 35
     mov r24, r18
     mov r25, r19
     clr r22
@@ -143,15 +143,15 @@ resolution_went_prison:
     rjmp resolution_show_balance
     
 resolution_was_prison:
-    ; Was in prison -> check if win (released)
+    ; Estava na prisão -> verifica se ganhou (libertado)
     lds r20, RAM_ROUND_NUM
-    mov temp, r22           ; type
-    mov temp2, r23          ; target
+    mov temp, r22 ; tipo
+    mov temp2, r23 ; alvo
     call Check_Bet_Win
     tst temp
     breq resolution_prison_loss
     
-    ; Released!
+    ; Libertado!
     call Buzzer_Success
     ldi ZL, low(msg_p_win_ext * 2)
     ldi ZH, high(msg_p_win_ext * 2)
@@ -168,7 +168,7 @@ resolution_prison_loss:
     call LCD_Print_Msg
     
 resolution_show_balance:
-    ; Line 1: "Novo Bal: [Balance]"
+    ; Linha 1
     ldi temp, 1
     ldi temp2, 0
     call LCD_Set_Cursor
@@ -177,10 +177,10 @@ resolution_show_balance:
     ldi ZH, high(msg_novo_bal * 2)
     call LCD_Print_Msg
     
-    call Player_Get_Balance ; returns balance in r25:r24
+    call Player_Get_Balance ; retorna o saldo em r25:r24
     call LCD_Print_Dec16
     
-    ; Wait dynamically to let players read result
+    ; Aguarda um tempo dinâmico para os jogadores lerem o resultado
     push temp2
     ldi temp2, RESULT_DELAY_COUNT
 resolution_delay_loop:
@@ -190,7 +190,7 @@ resolution_delay_loop:
     brne resolution_delay_loop
     pop temp2
     
-    ; Loop to next player
+    ; Loop para o próximo jogador
     inc active_plyr
     lds temp, RAM_NUM_PLAYERS
     inc temp
@@ -202,7 +202,7 @@ resolution_plyr_loop_jmp:
     rjmp resolution_plyr_loop
     
 resolution_finished:
-    ldi active_plyr, 1      ; Reset to player 1
+    ldi active_plyr, 1 ; comecar no jogador 1
     ldi fsm_state, STATE_MAIN_MENU
     
     pop ZH
@@ -216,7 +216,7 @@ resolution_finished:
 Run_En_Prison:
     ret
 
-; Submodule Inclusions
+; Inclusão de subódulos
 .include "game/resolution/spin_seq.asm"
 .include "game/resolution/rules.asm"
 .include "game/resolution/strings.asm"

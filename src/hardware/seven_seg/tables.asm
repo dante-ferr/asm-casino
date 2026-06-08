@@ -1,13 +1,13 @@
-; Segment mapping tables stored in Flash
-; table_portd maps digits 0-9 to PD7-PD5 (segments A, B, C)
+; Tabelas de mapeamento de segmentos salvas na Flash
+; table_portd mapeia os dígitos de 0 a 9 para os pinos PD7-PD5 (segmentos A, B, C)
 table_portd:
     .db 0xE0, 0xC0, 0x60, 0xE0, 0xC0, 0xA0, 0xA0, 0xE0, 0xE0, 0xE0
 
-; table_portb maps digits 0-9 to PB3-PB0 (segments D, E, F, G)
+; table_portb mapeia os dígitos de 0 a 9 para os pinos PB3-PB0 (segmentos D, E, F, G)
 table_portb:
     .db 0x07, 0x00, 0x0B, 0x09, 0x0C, 0x0D, 0x0F, 0x00, 0x0F, 0x0D
 
-; Display rotating segment tables (8 frames, single trace moving from left to right display)
+; Tabelas dos segmentos rotativos para animação (8 quadros, movimento da esquerda para a direita)
 anim_table_portd_left:
     .db 0x20, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
 anim_table_portb_left:

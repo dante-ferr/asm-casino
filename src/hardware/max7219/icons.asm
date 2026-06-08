@@ -1,16 +1,16 @@
-; Coordinate table for the 20 LEDs around the circular border of the 8x8 matrix
-; Format: Row (1-8), Column bitmask
+; Tabela de coordenadas para os 20 LEDs na borda externa da matriz 8x8
+; Formato: Linha (1-8), máscara de bits da coluna
 border_table:
-    ; Top-Left corner & Top row
+    ; Canto superior esquerdo e linha de cima
     .db 2, 0x40, 1, 0x20, 1, 0x10, 1, 0x08, 1, 0x04, 2, 0x02
-    ; Right column
+    ; Coluna da direita
     .db 3, 0x01, 4, 0x01, 5, 0x01, 6, 0x01
-    ; Bottom-Right corner & Bottom row
+    ; Canto inferior direito e linha de baixo
     .db 7, 0x02, 8, 0x04, 8, 0x08, 8, 0x10, 8, 0x20, 7, 0x40
-    ; Left column
+    ; Coluna da esquerda
     .db 6, 0x80, 5, 0x80, 4, 0x80, 3, 0x80
 
-; 8x8 Icon Definitions (8 bytes each)
+; Definição de ícones 8x8 (8 bytes cada)
 icon_avatar:
     .db 0x18, 0x3C, 0x3C, 0x18, 0x3C, 0x7E, 0x7E, 0x00
     

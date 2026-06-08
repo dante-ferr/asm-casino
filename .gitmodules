@@ -1,0 +1,4 @@
+[submodule "backstage"]
+	path = backstage
+	url = https://github.com/dante-ferr/asm-casino-backstage.git
+	branch = master

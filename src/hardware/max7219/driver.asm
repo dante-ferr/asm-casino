@@ -1,21 +1,21 @@
-; Write 16-bit packet to MAX7219 (register in temp, data in temp2)
+; Envia pacote de 16 bits para o MAX7219 (registrador em temp, dado em temp2)
 max7219_write:
     push temp
     push temp2
     push r20
     push r21
 
-    cbi PORTC, MATRIX_CS    ; CS = 0 (enable transmission)
+    cbi PORTC, MATRIX_CS ; CS = 0 (inicia transmissão)
     
-    ; Send register address
+    ; Envia o endereço do registrador
     mov r20, temp
     rcall max7219_send_byte
 
-    ; Send data byte
+    ; Envia o byte de dado
     mov r20, temp2
     rcall max7219_send_byte
 
-    sbi PORTC, MATRIX_CS    ; CS = 1 (latch data)
+    sbi PORTC, MATRIX_CS ; CS = 1 (salva o dado)
     
     pop r21
     pop r20
@@ -23,53 +23,53 @@ max7219_write:
     pop temp
     ret
 
-; Shift out 8 bits from r20 (MSB first)
+; Envia 8 bits do r20 (MSB primeiro)
 max7219_send_byte:
     ldi r21, 8
 send_bit_loop:
-    sbi PORTC, MATRIX_DIN   ; default DIN to 1
-    sbrs r20, 7             ; skip pull down if MSB is 1
-    cbi PORTC, MATRIX_DIN   ; pull DIN to 0
+    sbi PORTC, MATRIX_DIN ; DIN padrão em 1
+    sbrs r20, 7 ; pula se o MSB for 1
+    cbi PORTC, MATRIX_DIN ; coloca DIN em 0
     
-    sbi PORTC, MATRIX_SCK   ; SCK = 1
-    lsl r20                 ; shift register for next bit
-    cbi PORTC, MATRIX_SCK   ; SCK = 0
+    sbi PORTC, MATRIX_SCK ; clock alto
+    lsl r20 ; rotaciona bit
+    cbi PORTC, MATRIX_SCK ; clock baixo
     
     dec r21
     brne send_bit_loop
     ret
 
-; Initialize MAX7219 settings and clear the matrix
+; Inicializa as configurações do MAX7219 e limpa a matriz
 Matrix_Init:
-    ; Configure control pins as outputs
+    ; Configura pinos de controle como saída
     sbi DDRC, MATRIX_DIN
     sbi DDRC, MATRIX_SCK
     sbi DDRC, MATRIX_CS
     
-    ; CS starts high
+    ; CS inicializa em nível alto
     sbi PORTC, MATRIX_CS
     
-    ; Shutdown register: Normal operation (0x01)
+    ; Modo de operação normal
     ldi temp, MAX7219_SHUTDOWN
     ldi temp2, 0x01
     rcall max7219_write
 
-    ; Display test register: Normal mode (0x00)
+    ; Modo de teste desligado
     ldi temp, MAX7219_TEST
     ldi temp2, 0x00
     rcall max7219_write
 
-    ; Decode mode register: No decode (0x00)
+    ; Sem decodificação de caracteres
     ldi temp, MAX7219_DECODE
     ldi temp2, 0x00
     rcall max7219_write
 
-    ; Scan limit register: Scan all digits 0-7 (0x07)
+    ; Habilita todas as 8 linhas
     ldi temp, MAX7219_SCAN_LIMIT
     ldi temp2, 0x07
     rcall max7219_write
 
-    ; Intensity register: Set brightness level
+    ; Ajusta brilho
     ldi temp, MAX7219_INTENSITY
     ldi temp2, MAX7219_BRIGHTNESS
     rcall max7219_write
@@ -77,15 +77,15 @@ Matrix_Init:
     rcall Matrix_Clear
     ret
 
-; Send framebuffer data to MAX7219
+; Envia os dados do framebuffer para o MAX7219
 Matrix_Refresh:
     push temp
     push temp2
-    ldi temp, 1             ; start at row 1
+    ldi temp, 1 ; começa na linha 1
     ldi ZL, low(RAM_SCREEN_BUF)
     ldi ZH, high(RAM_SCREEN_BUF)
 refresh_loop:
-    ld temp2, Z+            ; load from buffer and increment pointer
+    ld temp2, Z+ ; carrega do buffer e incrementa
     rcall max7219_write
     inc temp
     cpi temp, 9
@@ -94,7 +94,7 @@ refresh_loop:
     pop temp
     ret
 
-; Clear framebuffer and refresh screen
+; Limpa o framebuffer e atualiza a tela
 Matrix_Clear:
     push temp
     push ZL
@@ -113,9 +113,9 @@ clear_buf_loop_main:
     pop temp
     ret
 
-; Render and refresh LED matrix frame
-; temp  = center pattern (0x80 = static diamond 2x2, 0x00/0xFF = empty)
-; temp2 = ball index on circular border (0-19, or 0xFF = no ball)
+; Renderiza e atualiza o frame na matriz de LED
+; temp  = padrão central (0x80 = diamante, 0x00/0xFF = vazio)
+; temp2 = índice da bola na borda (0-19, ou 0xFF = sem bola)
 Matrix_Render_Frame:
     push temp
     push temp2
@@ -124,10 +124,10 @@ Matrix_Render_Frame:
     push ZL
     push ZH
     
-    mov r20, temp           ; save center control code
-    mov r21, temp2          ; save ball index
+    mov r20, temp ; save center control code
+    mov r21, temp2 ; save ball index
     
-    ; 1. Clear local framebuffer in SRAM
+    ; Limpa o framebuffer local na SRAM
     ldi ZL, low(RAM_SCREEN_BUF)
     ldi ZH, high(RAM_SCREEN_BUF)
     ldi temp2, 8
@@ -137,34 +137,34 @@ clear_frame_loop:
     dec temp2
     brne clear_frame_loop
     
-    ; 2. Render center pattern
+    ; Desenha o padrão central
     cpi r20, 0x80
     brne skip_center
     
-    ; Render static diamond in the central 2x2 area (rows 4 and 5)
-    ldi temp, 0x18          ; row 4: 00011000
+    ; Desenha diamante estático na área central (linhas 4 e 5)
+    ldi temp, 0x18 ; linha 4: 00011000
     sts RAM_SCREEN_BUF+3, temp
-    sts RAM_SCREEN_BUF+4, temp ; row 5: 00011000
+    sts RAM_SCREEN_BUF+4, temp ; linha 5: 00011000
     
 skip_center:
-    ; 3. Render ball position
+    ; Desenha a posição da bola
     cpi r21, 0xFF
     breq skip_ball
     
-    ; Multiply ball index by 2 to get offset in border_table
+    ; Multiplica o índice por 2 para achar o deslocamento na tabela
     lsl r21
     clr temp2
     ldi ZL, low(border_table * 2)
     ldi ZH, high(border_table * 2)
     add ZL, r21
     adc ZH, temp2
-    lpm temp, Z+            ; fetch row (1 to 8)
-    lpm temp2, Z            ; fetch column mask
+    lpm temp, Z+ ; lê a linha (1 a 8)
+    lpm temp2, Z ; lê a máscara da coluna
     
-    ; Convert row (1-8) to buffer offset (0-7)
+    ; Converte linha (1-8) para offset do buffer (0-7)
     dec temp
     
-    ; Apply bitmask using logical OR in framebuffer
+    ; Aplica a máscara usando OR lógico no framebuffer
     ldi ZL, low(RAM_SCREEN_BUF)
     ldi ZH, high(RAM_SCREEN_BUF)
     add ZL, temp
@@ -175,7 +175,7 @@ skip_center:
     st Z, r20
     
 skip_ball:
-    ; 4. Write framebuffer to MAX7219 registers
+    ; Escreve o framebuffer nos registradores do MAX7219
     rcall Matrix_Refresh
     
     pop ZH
@@ -186,9 +186,9 @@ skip_ball:
     pop temp
     ret
 
-; Draw a static 8x8 icon on the LED matrix from Flash
-; Inputs:
-;   ZH:ZL = Flash address of the 8-byte icon data (multiplied by 2)
+; Desenha um ícone estático de 8x8 da Flash na matriz
+; Entradas:
+;   ZH:ZL = Endereço do ícone de 8 bytes na Flash (multiplicado por 2)
 Matrix_Draw_Icon:
     push temp
     push r20
@@ -199,14 +199,14 @@ Matrix_Draw_Icon:
     
     ldi XL, low(RAM_SCREEN_BUF)
     ldi XH, high(RAM_SCREEN_BUF)
-    ldi r20, 8                  ; 8 rows to copy
+    ldi r20, 8 ; 8 linhas para copiar
 copy_icon_loop:
-    lpm temp, Z+                ; load byte from Flash and post-increment Z
-    st X+, temp                 ; store byte to SRAM and post-increment X
+    lpm temp, Z+ ; lê byte da Flash
+    st X+, temp ; salva byte na SRAM
     dec r20
     brne copy_icon_loop
     
-    ; Write SRAM buffer to MAX7219
+    ; Envia buffer da SRAM para o MAX7219
     rcall Matrix_Refresh
     
     pop ZH

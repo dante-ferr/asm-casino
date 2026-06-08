@@ -1,5 +1,5 @@
-; Plays the currently selected music track and animates the LED matrix border.
-; Returns temp = button code (1, 2, 3) if interrupted, 0 if finished playing
+; Toca a música atual e anima as bordas da matriz de LED.
+; Retorna o código do botão pressionado em temp se for interrompido, ou 0 se terminar a música
 Buzzer_Play_Current_Track:
     push temp2
     push r18
@@ -11,7 +11,7 @@ Buzzer_Play_Current_Track:
     cpi temp, 0
     brne track_check_1
     
-    ; Track 0: Ode to Joy
+    ; Música 0: Ode à Alegria
     ldi ZL, low(ode_to_joy_table * 2)
     ldi ZH, high(ode_to_joy_table * 2)
     ldi r19, ODE_TO_JOY_TEMPO_PAUSE
@@ -21,7 +21,7 @@ track_check_1:
     cpi temp, 1
     brne track_check_2
     
-    ; Track 1: Minuet in G
+    ; Música 1: Minueto em Sol
     ldi ZL, low(minuet_g_table * 2)
     ldi ZH, high(minuet_g_table * 2)
     ldi r19, MINUET_G_TEMPO_PAUSE
@@ -31,7 +31,7 @@ track_check_2:
     cpi temp, 2
     brne track_check_3
     
-    ; Track 2: Tetris Theme
+    ; Música 2: Tema do Tetris
     ldi ZL, low(tetris_table * 2)
     ldi ZH, high(tetris_table * 2)
     ldi r19, TETRIS_TEMPO_PAUSE
@@ -41,26 +41,26 @@ track_check_3:
     cpi temp, 3
     brne track_check_4
     
-    ; Track 3: Star Wars Imperial March
+    ; Música 3: Marcha Imperial (Star Wars)
     ldi ZL, low(star_wars_table * 2)
     ldi ZH, high(star_wars_table * 2)
     ldi r19, STAR_WARS_TEMPO_PAUSE
     rjmp play_loop_start
 
 track_check_4:
-    ; Track 4: Super Mario Bros Theme
+    ; Música 4: Tema do Super Mario Bros
     ldi ZL, low(mario_table * 2)
     ldi ZH, high(mario_table * 2)
     ldi r19, MARIO_TEMPO_PAUSE
     
 play_loop_start:
-    push r19                ; Save tempo pause on stack
+    push r19 ; Salva o tempo de pausa na pilha
     
 play_note_loop:
-    lpm r18, Z+             ; r18 = pitch
-    lpm r19, Z+             ; r19 = cycles
+    lpm r18, Z+ ; r18 = tom
+    lpm r19, Z+ ; r19 = ciclos
     
-    ; check end marker (both pitch and cycles must be 0)
+    ; Verifica fim da música (tom e ciclos zerados)
     tst r18
     brne play_note_start
     tst r19
@@ -69,7 +69,7 @@ play_note_loop:
 play_not_done:
 play_note_start:
     
-    ; Advance and render animation step on LED matrix
+    ; Avança e desenha a animação na matriz de LED
     lds temp2, RAM_BALL_IDX
     inc temp2
     cpi temp2, MATRIX_RING_SIZE
@@ -77,25 +77,25 @@ play_note_start:
     ldi temp2, 0
 ball_no_wrap:
     sts RAM_BALL_IDX, temp2
-    ldi temp, 0x80          ; center diamond pattern
+    ldi temp, 0x80 ; padrão de diamante no centro
     call Matrix_Render_Frame
     
-    ; Play note in responsive chunks
+    ; Toca a nota em pequenos pedaços para não travar os botões
     mov temp2, r19
     
-    ; Check if this is Track 0 (Ode to Joy)
+    ; Se for a Música 0 (Ode à Alegria)
     lds temp, RAM_CURRENT_TRACK
     tst temp
-    breq start_chunk_loop   ; Ode to Joy: use full 8-bit cycle count, do not mask bit 7
+    breq start_chunk_loop ; Ode à Alegria: usa contagem de 8 bits completa
     
-    ; Non-Ode to Joy tracks: strip bit 7 (no-pause flag) from cycle count
+    ; Outras músicas: ignora o bit 7 que indica se deve pausar
     andi temp2, 0x7F
     
-    ; Check if this is Track 1 (Minuet in G) -> Scale tempo (slow down by 25%)
+    ; Se for a Música 1 (Minueto em Sol) -> diminui a velocidade em 25%
     cpi temp, 1
     brne start_chunk_loop
     
-    ; Slow down Minuet in G by 25%: temp2_scaled = temp2 + temp2 / 4
+    ; Desacelera o Minueto: temp2 = temp2 + temp2 / 4
     push r20
     mov r20, temp2
     lsr r20
@@ -104,7 +104,7 @@ ball_no_wrap:
     pop r20
     
 start_chunk_loop:
-    ; Play the note cycles in chunks of max 16, reading buttons in between
+    ; Toca blocos de até 16 ciclos e checa os botões no intervalo
 play_chunk_loop:
     tst temp2
     breq play_chunk_done
@@ -116,36 +116,36 @@ play_chunk_loop:
 play_chunk_small:
     sub temp2, temp
     
-    push temp2              ; Save remaining cycles
-    mov temp2, temp         ; temp2 = chunk cycles
-    mov temp, r18           ; temp = pitch
+    push temp2 ; Salva ciclos restantes
+    mov temp2, temp ; temp2 = ciclos deste bloco
+    mov temp, r18 ; temp = tom
     call Buzzer_Play_Tone
-    pop temp2               ; Restore remaining cycles
+    pop temp2 ; Restaura ciclos restantes
     
-    ; Check if a button is pressed
+    ; Verifica se algum botão foi pressionado
     call Read_Buttons
     tst temp
-    breq play_chunk_loop    ; No press -> continue playing this note
+    breq play_chunk_loop ; nenhum botão -> continua a nota
     
-    ; Button pressed! Exit immediately returning button code in temp
-    mov r18, temp           ; Save button code
-    pop temp                ; Clean up pause duration from stack
+    ; Botão pressionado! Sai retornando o código do botão
+    mov r18, temp ; Salva código do botão
+    pop temp ; Limpa a pilha
     mov temp, r18
-    rjmp play_exit          ; Exit early
+    rjmp play_exit ; Sai mais cedo
     
 play_chunk_done:
-    ; Note finished playing. Now check if we should pause between notes
-    ; Check no-pause flag (bit 7 of cycles) for tracks other than Ode to Joy
+    ; Fim da nota. Verifica se deve pausar antes da próxima
+    ; Verifica flag de sem pausa (bit 7) para outras músicas
     lds temp, RAM_CURRENT_TRACK
     tst temp
-    breq do_pause           ; Ode to Joy: always pause
+    breq do_pause ; Ode à Alegria sempre pausa
     
-    sbrc r19, 7             ; Skip if bit 7 of cycles is clear
-    rjmp play_note_loop     ; Bit 7 is set -> play next note immediately without pausing
+    sbrc r19, 7 ; Pula se o bit 7 estiver zerado
+    rjmp play_note_loop ; Bit 7 ativo -> toca a proxima sem pausa
     
 do_pause:
     ; Pause while checking buttons
-    pop r19                 ; restore pause duration
+    pop r19 ; restaura duração da pausa
     push r19
     
     mov temp, r19
@@ -158,18 +158,18 @@ div_10_loop:
 div_10_done:
     tst temp2
     breq pause_loop_done
-    mov temp, temp2         ; loop counter
+    mov temp, temp2 ; contador do loop
 pause_loop:
     push temp
     call Read_Buttons
     tst temp
     breq pause_no_press
     
-    ; Button pressed! Save button code in r18
+    ; Botão pressionado! Salva o código em r18
     mov r18, temp
-    pop temp                ; clean up loop counter
-    pop r19                 ; clean up pause duration
-    mov temp, r18           ; return button code in temp
+    pop temp ; limpa contador
+    pop r19 ; limpa duração da pausa
+    mov temp, r18 ; retorna código do botão
     rjmp play_exit
     
 pause_no_press:
@@ -182,8 +182,8 @@ pause_loop_done:
     rjmp play_note_loop
 
 play_track_done:
-    pop r19                 ; clean up pause duration
-    ldi temp, 0             ; return 0 (no button pressed)
+    pop r19 ; limpa duração da pausa
+    ldi temp, 0 ; retorna 0 (nenhum botão pressionado)
 play_exit:
     pop ZH
     pop ZL

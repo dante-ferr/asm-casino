@@ -1,6 +1,6 @@
-; FSM State: Welcome Splash Screen and Logic
-; Shows the name of the game on LCD, and animates a spinning roulette on the matrix.
-; Transitions to STATE_NUM_PLAYERS upon any button press.
+; Estado da FSM: Tela de boas-vindas e lógica
+; Exibe o nome do jogo no LCD e anima uma roleta girando na matriz.
+; Transiciona para STATE_NUM_PLAYERS ao pressionar qualquer botão.
 
 Run_Welcome:
     push r18
@@ -14,43 +14,43 @@ welcome_restart_melody:
 welcome_melody_loop:
     call Buzzer_Play_Current_Track
     tst temp
-    breq welcome_melody_loop          ; if finished normally, loop/restart it!
+    breq welcome_melody_loop ; se a música terminar, reinicia em loop
     
-    ; Button was pressed!
-    cpi temp, 3                       ; Select button?
-    brne welcome_button_pressed       ; A or B -> transition to player selection
+    ; Botão pressionado!
+    cpi temp, 3 ; Botão Select?
+    brne welcome_button_pressed ; A ou B -> transiciona para a seleção de jogadores
     
-    ; Wait for Select to be released
+    ; Aguarda a liberação do botão Select
 wait_select_release:
     call Read_Buttons
     tst temp
     brne wait_select_release
 
-    ; Select released -> Toggle track index (0 -> 1 -> 2 -> 3 -> 0)
+    ; Select liberado -> altera o índice da música
     lds temp2, RAM_CURRENT_TRACK
     inc temp2
-    cpi temp2, 5                      ; 5 tracks
+    cpi temp2, 5 ; total de 5 faixas
     brlo save_track
     ldi temp2, 0
 save_track:
     sts RAM_CURRENT_TRACK, temp2
     
-    ; Play switch track confirmation sound
+    ; Toca som de confirmação de troca de faixa
     call Buzzer_Beep
     
     rjmp welcome_restart_melody
  
 welcome_button_pressed:
-    ; Wait for the button to be released
+    ; Aguarda a liberação do botão
 wait_welcome_release:
     call Read_Buttons
     tst temp
     brne wait_welcome_release
 
-    ; Play confirmation beep
+    ; Toca bipe de confirmação
     call Buzzer_Beep
     
-    ; Transition state to STATE_NUM_PLAYERS
+    ; Transiciona para STATE_NUM_PLAYERS
     ldi fsm_state, STATE_NUM_PLAYERS
     
     pop r23
@@ -69,7 +69,7 @@ Show_Welcome_Screen:
     
     call LCD_Clear
     
-    ; Line 0: "Roleta Francesa"
+    ; Linha 0
     ldi temp, 0
     ldi temp2, 0
     call LCD_Set_Cursor

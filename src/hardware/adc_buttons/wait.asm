@@ -1,5 +1,5 @@
-; Waits for a button to be pressed and then fully released
-; Returns the pressed button code in temp
+; Espera um botão ser pressionado e solto
+; Retorna o código do botão pressionado em temp
 Wait_Button_Press:
     rcall Read_Buttons
     tst temp
@@ -7,7 +7,7 @@ Wait_Button_Press:
     
     push temp
     
-    ; Debounce press: wait 20ms
+    ; Debounce do clique: espera 20ms
     ldi temp, 20
     call delay_ms
     
@@ -16,7 +16,7 @@ wait_release:
     tst temp
     brne wait_release
     
-    ; Debounce release: wait 20ms
+    ; Debounce da soltura: espera 20ms
     ldi temp, 20
     call delay_ms
     

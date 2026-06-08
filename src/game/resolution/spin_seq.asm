@@ -1,10 +1,10 @@
-; Modular Roulette Spin Sequence Logic
-; Handles animation steps, LED matrix mapping, friction deceleration, and buzzer sounds.
+; Lógica modular da sequência de giro da roleta
+; Controla as etapas de animação, mapeamento de LEDs, desaceleração e efeitos sonoros.
 
-; Runs the complete roulette spin sequence
-; Inputs: None
-; Outputs:
-;   temp2 = winning number (0-36)
+; Executa a sequência completa de giro da roleta
+; Entradas: Nenhuma
+; Saídas:
+;   temp2 = número vencedor (0-36)
 Run_Roulette_Spin_Sequence:
     push r20
     push r21
@@ -15,61 +15,61 @@ Run_Roulette_Spin_Sequence:
     push ZL
     push ZH
     
-    ; 1. Draw a pseudo-random winning slot index (0 to 36) using PRNG
+    ; Sorteia um índice de slot vencedor pseudoaleatório (0 a 36) usando o PRNG
     call PRNG_Spin
-    mov r22, temp2          ; r22 now contains the winning slot index S_win (0 to 36)
+    mov r22, temp2 ; r22 agora contém o índice do slot vencedor S_win (0 a 36)
     
-    ; 2. Determine total steps for animation (at least 2 full loops + S_win)
-    ; total steps = SPIN_BASE_STEPS + S_win
+    ; Determina o total de passos para a animação (pelo menos 2 voltas completas + S_win)
+    ; passos totais = SPIN_BASE_STEPS + S_win
     ldi r23, SPIN_BASE_STEPS
-    add r23, r22            ; r23 = total steps remaining (counter decreases)
+    add r23, r22 ; r23 = passos restantes (contador decrescente)
     
-    push r22                ; Save rigged winning slot (S_win) to prevent overwrite
+    push r22 ; salva o slot vencedor sorteado (S_win)
     
-    ; 3. Run spin animation loop
-    ldi r21, 0              ; r21 = current slot index S (starts at 0)
+    ; Executa o loop de animação do giro
+    ldi r21, 0 ; r21 = índice do slot atual S (começa em 0)
 spin_anim_loop:
-    ; Save remaining steps and current slot
+    ; Salva os passos restantes e o slot atual
     push r23
     push r21
     
-    ; Get roulette number for current slot S
+    ; Lê o número correspondente ao slot S
     ldi ZL, low(roulette_wheel_table * 2)
     ldi ZH, high(roulette_wheel_table * 2)
     add ZL, r21
     clr temp
     adc ZH, temp
-    lpm r24, Z              ; r24 = current number (0-36)
+    lpm r24, Z ; r24 = número atual (0-36)
     
-    ; Update 7-segment display with current number
+    ; Atualiza o display de 7 segmentos com o número atual
     sts RAM_ROUND_NUM, r24
     
-    ; Set RGB LED color according to current number
+    ; Configura a cor do LED RGB com base no número atual
     mov temp, r24
     call RGB_Set_By_Number
     
-    ; Map slot S (r21) to LED matrix index L (0-19)
-    ; Formula: L = (S * 20) / 37
-    mov r22, r21            ; S
-    rcall map_slot_to_led   ; returns L in r20
+    ; Mapeia o slot S (r21) para o índice L da matriz de LEDs (0-19)
+    ; Fórmula: L = (S * 20) / 37
+    mov r22, r21 ; S
+    rcall map_slot_to_led ; retorna L em r20
     
-    ; Render matrix frame with static diamond and ball at L
+    ; Renderiza o frame da matriz com losango estático e bola em L
     ldi temp, 0x80
     mov temp2, r20
     call Matrix_Render_Frame
     
-    ; Play spin step sound
+    ; Toca som a cada passo do giro
     call Buzzer_Tick
     
-    ; Decelerate using variable delay based on remaining steps (r23)
-    pop r21                 ; restore S
-    pop r23                 ; restore remaining steps count
+    ; Desacelera usando atraso variável com base nos passos restantes (r23)
+    pop r21 ; restaura S
+    pop r23 ; restaura quantidade de passos restantes
     
-    mov temp, r23           ; determine delay based on remaining steps
-    rcall get_friction_delay ; returns delay in temp
+    mov temp, r23 ; determina o atraso pelos passos restantes
+    rcall get_friction_delay ; retorna o atraso em temp
     call delay_ms
     
-    ; Advance to next physical slot clockwise
+    ; Avança para o próximo slot físico no sentido horário
     inc r21
     cpi r21, ROULETTE_SLOTS
     brlo slot_no_wrap
@@ -79,33 +79,33 @@ slot_no_wrap:
     dec r23
     brne spin_anim_loop
     
-    pop r22                 ; Restore winning slot (S_win)
+    pop r22 ; restaura o slot vencedor (S_win)
     
-    ; 4. Final step: Stop on winning slot
+    ; Passo final: para no slot vencedor
     ldi ZL, low(roulette_wheel_table * 2)
     ldi ZH, high(roulette_wheel_table * 2)
     add ZL, r22
     clr temp
     adc ZH, temp
-    lpm r24, Z              ; r24 = winning number (0-36)
+    lpm r24, Z ; r24 = número vencedor (0-36)
     
-    ; Save final winning number in RAM
+    ; Salva o número vencedor final na RAM
     sts RAM_ROUND_NUM, r24
     
-    ; Map winning slot S_win (r22) to LED matrix index L
-    rcall map_slot_to_led   ; returns L in r20
-    sts RAM_BALL_IDX, r20   ; Save final ball index
+    ; Mapeia o slot vencedor S_win (r22) para o índice L da matriz de LEDs
+    rcall map_slot_to_led ; retorna L em r20
+    sts RAM_BALL_IDX, r20 ; salva o índice final da bola
     
-    ; Render final frame
+    ; Renderiza o frame final
     ldi temp, 0x80
     mov temp2, r20
     call Matrix_Render_Frame
     
-    ; Set winning color on RGB LED
+    ; Acende o LED RGB na cor vencedora
     mov temp, r24
     call RGB_Set_By_Number
     
-    ; Return winning number in temp2
+    ; Retorna o número vencedor em temp2
     mov temp2, r24
     
     pop ZH
@@ -118,18 +118,18 @@ slot_no_wrap:
     pop r20
     ret
 
-; Calculate physical LED index (L) for current wheel slot (S)
-; Formula: L = (S * 20) / 37
-; Inputs:
-;   r22 = Slot index (0-36)
-; Outputs:
-;   r20 = LED index (0-19)
+; Calcula o índice físico do LED (L) para o slot atual da roleta (S)
+; Fórmula: L = (S * 20) / 37
+; Entradas:
+;   r22 = Índice do slot (0-36)
+; Saídas:
+;   r20 = Índice do LED (0-19)
 map_slot_to_led:
     push temp
     push r24
     push r25
     
-    ; 1. Multiply S (r22) by MATRIX_RING_SIZE -> result in r25:r24
+    ; Multiplica S (r22) por MATRIX_RING_SIZE -> resultado em r25:r24
     clr r24
     clr r25
     ldi temp, MATRIX_RING_SIZE
@@ -140,13 +140,13 @@ mul_loop_spin:
     dec temp
     brne mul_loop_spin
     
-    ; 2. Divide r25:r24 by ROULETTE_SLOTS via subtraction loop
-    clr r20                 ; r20 will hold the result (L)
+    ; Divide r25:r24 por ROULETTE_SLOTS via subtrações sucessivas
+    clr r20 ; r20 guardará o resultado (L)
 div_loop_spin:
     cpi r24, ROULETTE_SLOTS
     ldi temp, 0
     cpc r25, temp
-    brlo div_done_spin      ; if r25:r24 < ROULETTE_SLOTS, done
+    brlo div_done_spin ; se r25:r24 < ROULETTE_SLOTS, encerra
     
     subi r24, ROULETTE_SLOTS
     sbci r25, 0
@@ -154,10 +154,10 @@ div_loop_spin:
     rjmp div_loop_spin
     
 div_done_spin:
-    ; 3. Add offset of ROULETTE_ALIGN_OFFSET to align slot 0 (number 0) at the 4th column of the top row (LED index 2)
+    ; Adiciona o deslocamento de alinhamento para o zero da roleta ficar na posição correta
     subi r20, -ROULETTE_ALIGN_OFFSET
     
-    ; 4. Modulo MATRIX_RING_SIZE wrap-around
+    ; Ajusta com resto de divisão por MATRIX_RING_SIZE
     cpi r20, MATRIX_RING_SIZE
     brlo mod_20_spin_done
     subi r20, MATRIX_RING_SIZE
@@ -167,24 +167,25 @@ mod_20_spin_done:
     pop temp
     ret
 
-; Get friction delay in milliseconds based on remaining steps
-; Inputs:
-;   temp = remaining steps
-; Outputs:
-;   temp = delay in ms
+; Retorna o atraso de atrito em milissegundos com base nos passos restantes
+; Entradas:
+;   temp = passos restantes
+; Saídas:
+;   temp = atraso em ms
 get_friction_delay:
     cpi temp, 40
-    brsh delay_fast        ; remaining >= 40: 10ms
+    brsh delay_fast ; restante >= 40: 10ms
     cpi temp, 30
-    brsh delay_20          ; remaining 30-39: 20ms
+    brsh delay_20 ; restante 30-39: 20ms
     cpi temp, 20
-    brsh delay_40          ; remaining 20-29: 40ms
+    brsh delay_40 ; restante 20-29: 40ms
     cpi temp, 10
-    brsh delay_80          ; remaining 10-19: 80ms
+    brsh delay_80 ; restante 10-19: 80ms
     cpi temp, 5
-    brsh delay_150         ; remaining 5-9: 150ms
-    ; remaining 1-4:
-    ldi temp, 250          ; 250ms
+    brsh delay_150 ; restante 5-9: 150ms
+    
+    ; restante 1-4:
+    ldi temp, 250 ; 250ms
     ret
 delay_fast:
     ldi temp, 10
@@ -202,7 +203,7 @@ delay_150:
     ldi temp, 150
     ret
 
-; Physical layout of French Roulette wheel (37 slots, padded to even length)
+; Layout físico do disco da roleta francesa
 roulette_wheel_table:
     .db 0, 32, 15, 19, 4, 21, 2, 25, 17, 34, 6, 27, 13, 36, 11, 30, 8, 23
     .db 10, 5, 24, 16, 33, 1, 20, 14, 31, 9, 22, 18, 29, 7, 28, 12, 35, 3, 26, 0

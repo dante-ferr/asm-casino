@@ -1,4 +1,4 @@
-; Game Main Menu Module
+; Módulo do menu principal do jogo
 
 Run_Main_Menu:
     rcall Show_Player_Menu
@@ -8,10 +8,10 @@ test_button_loop:
     push temp
 
     pop temp
-    cpi temp, 1            ; Button A -> Switch active player
+    cpi temp, 1 ; Botão A -> troca o jogador ativo
     brne check_btn_b
     
-; Cycle player ID (1 -> 2 -> ... -> RAM_NUM_PLAYERS -> 1)
+    ; Alterna o ID do jogador (1 até o número de jogadores ativos)
     mov temp2, active_plyr
     inc temp2
     lds temp, RAM_NUM_PLAYERS
@@ -22,41 +22,41 @@ test_button_loop:
 update_active_plyr:
     mov active_plyr, temp2
     
-    ; Update 7-segment display to show active player ID (01-04)
+    ; Atualiza o display de 7 segmentos com o ID do jogador ativo
     sts RAM_ROUND_NUM, active_plyr
     
-    ; Update RGB LED color to match player ID
+    ; Atualiza a cor do LED RGB correspondente ao ID do jogador
     mov temp, active_plyr
     rcall RGB_Set_By_Player
     
-    ; Play click sound
+    ; Toca som de clique
     rcall Buzzer_Tick
     
-    ; Refresh LCD display
+    ; Atualiza o display LCD
     rcall Show_Player_Menu
     rjmp test_button_loop
 
 check_btn_b:
-    cpi temp, 2            ; Button B -> Enter credit setting screen
+    cpi temp, 2 ; Botão B -> entra na tela de configuração de créditos
     brne check_btn_select
     
-    ; Switch FSM state and exit Run_Main_Menu
+    ; Altera o estado da FSM e retorna
     ldi fsm_state, STATE_SET_CREDITS
     ret
 
 check_btn_select:
-    cpi temp, 3            ; Button Select -> Enter betting phase
+    cpi temp, 3 ; Botão Select -> entra na fase de apostas
     brne test_button_loop
     
-    ; Play confirmation beep
+    ; Toca bipe de confirmação
     rcall Buzzer_Beep
     
-    ; Initialize FSM state to STATE_CHOOSE_CAT (Betting Phase) for Player 1
+    ; Define o estado da FSM como STATE_CHOOSE_CAT para o jogador 1
     ldi fsm_state, STATE_CHOOSE_CAT
-    ldi active_plyr, 1      ; Start with Player 1
+    ldi active_plyr, 1 ; começa no jogador 1
     ret
 
-; Show player ID and balance on LCD
+; Exibe o ID do jogador e o saldo no LCD
 Show_Player_Menu:
     push temp
     push temp2
@@ -65,21 +65,21 @@ Show_Player_Menu:
     push ZL
     push ZH
     
-    ; Update 7-segment display to show active player ID
+    ; Atualiza o display de 7 segmentos
     sts RAM_ROUND_NUM, active_plyr
     
-    ; Update RGB LED color to match player ID
+    ; Atualiza a cor do LED RGB
     mov temp, active_plyr
     rcall RGB_Set_By_Player
     
-    ; Draw avatar icon on LED matrix
+    ; Desenha o ícone do avatar na matriz de LEDs
     ldi ZL, low(icon_avatar * 2)
     ldi ZH, high(icon_avatar * 2)
     rcall Matrix_Draw_Icon
     
     rcall LCD_Clear
     
-    ; Line 0: "P[ID] Bal: [Value]"
+    ; Linha 0
     ldi temp, 0
     ldi temp2, 0
     rcall LCD_Set_Cursor
@@ -91,15 +91,15 @@ Show_Player_Menu:
     subi temp, -'0'
     rcall lcd_write_data
     
-    ; Check if active player is in prison
+    ; Verifica se o jogador ativo está na prisão
     rcall Player_Get_Pointer
-    ldd temp, Z+2           ; Z+2 = status byte
-    sbrc temp, 0            ; Skip printing indicator if not in prison (bit 0 is 0)
+    ldd temp, Z+2 ; status byte no offset 2
+    sbrc temp, 0 ; pula a impressão se não estiver na prisão
     rjmp print_prison_indicator
     rjmp print_bal_label_msg
     
 print_prison_indicator:
-    ; Print prison indicator
+    ; Imprime o indicador de prisão
     ldi temp, '('
     rcall lcd_write_data
     ldi temp, 'P'
@@ -112,10 +112,10 @@ print_bal_label_msg:
     ldi ZH, high(msg_bal_label * 2)
     rcall LCD_Print_Msg
     
-    rcall Player_Get_Balance ; returns balance in r25:r24
+    rcall Player_Get_Balance ; retorna o saldo em r25:r24
     rcall LCD_Print_Dec16
     
-    ; Line 1: "A:Mudar B:Cred S:Gira"
+    ; Linha 1
     ldi temp, 1
     ldi temp2, 0
     rcall LCD_Set_Cursor
@@ -131,7 +131,7 @@ print_bal_label_msg:
     pop temp
     ret
 
-; Submodule Inclusions
+; Inclusão de subódulos
 .include "game/menu/credits.asm"
 .include "game/menu/players_sel.asm"
 .include "game/menu/welcome.asm"

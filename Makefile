@@ -34,3 +34,12 @@ $(TARGET_HEX): $(DEPS)
 clean:
 	@echo "Cleaning build files..."
 	rm -f $(TARGET_HEX) $(INTERMEDIATES)
+
+# Detecta automaticamente a porta USB/ACM conectada (ou cai de volta para /dev/ttyUSB0)
+DETECTED_PORT = $(shell ls /dev/ttyUSB* /dev/ttyACM* 2>/dev/null | head -n 1)
+PORT ?= $(if $(DETECTED_PORT),$(DETECTED_PORT),/dev/ttyUSB0)
+BAUD ?= 115200
+
+upload: compile
+	@echo "Usando a porta: $(PORT)"
+	avrdude -v -p atmega328p -c arduino -P $(PORT) -b $(BAUD) -U flash:w:$(TARGET_HEX):i

@@ -38,19 +38,21 @@ show_betting_normal:
     
     ; --- MODOS DE EDIÇÃO DE ALVO E VALOR ---
     ; Linha 0: "P[ID]: [Target] [Cursor]"
+    ; Posiciona o cursor no início da linha 0
     ldi temp, 0
     ldi temp2, 0
     call LCD_Set_Cursor
     
+    ; Escreve "P[ID]: " no display LCD
     ldi temp, 'P'
-    call lcd_write_data
+    call lcd_write_data ; Escreve o caractere 'P'
     mov temp, active_plyr
     subi temp, -'0'
-    call lcd_write_data
+    call lcd_write_data ; Escreve o ID do jogador ativo convertido em caractere
     ldi temp, ':'
-    call lcd_write_data
+    call lcd_write_data ; Escreve ':'
     ldi temp, ' '
-    call lcd_write_data
+    call lcd_write_data ; Escreve o espaço em branco
     
     call Player_Get_Pointer
     ldd temp, Z+4 ; índice de seleção
@@ -119,6 +121,7 @@ show_bet_val_line:
     cpi temp, 1
     brne show_bet_val_keys
     
+    ; Escreve o cursor " <" para indicar o campo ativo de valor
     ldi temp, ' '
     call lcd_write_data
     ldi temp, '<'
@@ -139,10 +142,12 @@ show_bet_val_keys:
  
 show_betting_confirm:
     ; Linha 0: "P[ID] Conf: [SIM / VOLTAR]"
+    ; Posiciona o cursor no início da linha 0 para confirmação
     ldi temp, 0
     ldi temp2, 0
     call LCD_Set_Cursor
     
+    ; Escreve "P[ID]" no início da tela de confirmação
     ldi temp, 'P'
     call lcd_write_data
     mov temp, active_plyr
@@ -197,10 +202,12 @@ show_conf_val_line:
  
 show_betting_prison:
     ; Linha 0: "P[ID]: PRISÃO"
+    ; Posiciona o cursor no início da linha 0 para o estado de prisão
     ldi temp, 0
     ldi temp2, 0
     call LCD_Set_Cursor
     
+    ; Escreve "P[ID]" no cabeçalho
     ldi temp, 'P'
     call lcd_write_data
     mov temp, active_plyr

@@ -246,12 +246,12 @@ wait_loop_no_bets:
     dec temp
     brne wait_loop_no_bets
     
-    ldi active_plyr, 1 ; comecar no jogador 1
+    ldi active_plyr, 1 ; começar no jogador 1
     ldi fsm_state, STATE_MAIN_MENU ; retorna ao menu
     ret
 
 proceed_to_spin:
-    ldi active_plyr, 1 ; comecar no jogador 1
+    ldi active_plyr, 1 ; começar no jogador 1
     ldi fsm_state, STATE_SPIN_ROULET ; inicia o giro
     ret
 

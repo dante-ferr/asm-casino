@@ -141,7 +141,7 @@ play_chunk_done:
     breq do_pause ; Ode à Alegria sempre pausa
     
     sbrc r19, 7 ; Pula se o bit 7 estiver zerado
-    rjmp play_note_loop ; Bit 7 ativo -> toca a proxima sem pausa
+    rjmp play_note_loop ; Bit 7 ativo -> toca a próxima sem pausa
     
 do_pause:
     ; Pause while checking buttons

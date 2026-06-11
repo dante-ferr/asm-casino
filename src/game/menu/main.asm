@@ -99,13 +99,13 @@ Show_Player_Menu:
     rjmp print_bal_label_msg
     
 print_prison_indicator:
-    ; Imprime o indicador de prisão
+    ; Imprime o indicador de prisão "(P)" caractere por caractere
     ldi temp, '('
-    rcall lcd_write_data
+    rcall lcd_write_data ; Escreve '('
     ldi temp, 'P'
-    rcall lcd_write_data
+    rcall lcd_write_data ; Escreve 'P'
     ldi temp, ')'
-    rcall lcd_write_data
+    rcall lcd_write_data ; Escreve ')'
     
 print_bal_label_msg:
     ldi ZL, low(msg_bal_label * 2)

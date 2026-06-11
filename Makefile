@@ -15,17 +15,18 @@ DEPS = $(shell find $(SRC_DIR) -type f \( -name "*.asm" -o -name "*.inc" \))
 INTERMEDIATE_PATTERNS = *.obj *.eep.hex *.eep *.cof *.lst
 INTERMEDIATES = $(addprefix $(SRC_DIR)/, $(INTERMEDIATE_PATTERNS))
 
-.PHONY: all compile clean
+# Default setting for backpack (0 for SimulIDE, 1 for real hardware)
+BACKPACK ?= 0
+
+.PHONY: all compile clean upload
 
 # Default target
 all: compile
 
-# Compile target: builds the hex file and automatically removes intermediary files
-compile: $(TARGET_HEX)
-
-$(TARGET_HEX): $(DEPS)
-	@echo "Assembling $(MAIN_ASM)..."
-	cd $(SRC_DIR) && $(ASM) $(MAIN_ASM)
+# Compile target: builds the hex file with the specified BACKPACK flag
+compile: $(DEPS)
+	@echo "Assembling $(MAIN_ASM) with USE_PCF8574_BACKPACK=$(BACKPACK)..."
+	cd $(SRC_DIR) && $(ASM) -D USE_PCF8574_BACKPACK=$(BACKPACK) $(MAIN_ASM)
 	@echo "Removing intermediary files..."
 	rm -f $(INTERMEDIATES)
 	@echo "Compilation successful. Output: $(TARGET_HEX)"
@@ -40,6 +41,11 @@ DETECTED_PORT = $(shell ls /dev/ttyUSB* /dev/ttyACM* 2>/dev/null | head -n 1)
 PORT ?= $(if $(DETECTED_PORT),$(DETECTED_PORT),/dev/ttyUSB0)
 BAUD ?= 115200
 
-upload: compile
+# O target de upload força a recompilação com BACKPACK=1 para garantir a versão física
+upload:
+	@echo "Reassembling $(MAIN_ASM) with USE_PCF8574_BACKPACK=1 for hardware upload..."
+	cd $(SRC_DIR) && $(ASM) -D USE_PCF8574_BACKPACK=1 $(MAIN_ASM)
+	@echo "Removing intermediary files..."
+	rm -f $(INTERMEDIATES)
 	@echo "Usando a porta: $(PORT)"
 	avrdude -v -p atmega328p -c arduino -P $(PORT) -b $(BAUD) -U flash:w:$(TARGET_HEX):i

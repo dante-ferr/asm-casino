@@ -6,4 +6,6 @@ src/*.eep
 src/*.cof
 src/*.lst
 local
+docs/book/
 docs/book
+docs/src/.obsidian

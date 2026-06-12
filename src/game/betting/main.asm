@@ -67,7 +67,7 @@ target_loop_jmp:
     rjmp betting_phase_loop
 
 handle_mode_value:
-    cpi temp, 1 ; Botão A -> incrementa valor (+100)
+    cpi temp, 2 ; Botão B -> incrementa valor (+100)
     brne value_check_b
     
     ; Lê o saldo do jogador em r19:r18
@@ -111,7 +111,7 @@ value_tick_beep:
     rjmp betting_phase_loop
 
 value_check_b:
-    cpi temp, 2 ; Botão B -> decrementa valor (-100)
+    cpi temp, 1 ; Botão A -> decrementa valor (-100)
     brne value_check_select
     
     call Player_Get_Pointer
@@ -246,12 +246,12 @@ wait_loop_no_bets:
     dec temp
     brne wait_loop_no_bets
     
-    ldi active_plyr, 1 ; comecar no jogador 1
+    ldi active_plyr, 1 ; começar no jogador 1
     ldi fsm_state, STATE_MAIN_MENU ; retorna ao menu
     ret
 
 proceed_to_spin:
-    ldi active_plyr, 1 ; comecar no jogador 1
+    ldi active_plyr, 1 ; começar no jogador 1
     ldi fsm_state, STATE_SPIN_ROULET ; inicia o giro
     ret
 

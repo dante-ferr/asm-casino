@@ -7,7 +7,7 @@ set_credits_loop:
     push temp
     
     pop temp
-    cpi temp, 1 ; Botão A -> adiciona 100 pontos
+    cpi temp, 2 ; Botão B -> adiciona 100 pontos
     brne set_credits_b
     
     ; Lê o saldo atual (r25:r24)
@@ -32,7 +32,7 @@ set_credits_tick:
     rjmp set_credits_loop
     
 set_credits_b:
-    cpi temp, 2 ; Botão B -> subtrai 100 pontos
+    cpi temp, 1 ; Botão A -> subtrai 100 pontos
     brne set_credits_select
     
     ; Lê o saldo atual (r25:r24)

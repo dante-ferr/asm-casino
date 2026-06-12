@@ -81,15 +81,34 @@ Matrix_Init:
 Matrix_Refresh:
     push temp
     push temp2
-    ldi temp, 1 ; começa na linha 1
-    ldi ZL, low(RAM_SCREEN_BUF)
-    ldi ZH, high(RAM_SCREEN_BUF)
+    push r20
+    push r21
+    
+    ldi temp, 1 ; começa na linha/registrador 1 do MAX7219
+    ; Inicializa o ponteiro Z no fim do buffer + 1 (para o pré-decremento)
+    ldi ZL, low(RAM_SCREEN_BUF + 8)
+    ldi ZH, high(RAM_SCREEN_BUF + 8)
+    
 refresh_loop:
-    ld temp2, Z+ ; carrega do buffer e incrementa
+    ld temp2, -Z ; pré-decrementa Z e carrega do buffer (inversão vertical)
+    
+    ; Inverte a ordem dos bits de temp2 (inversão horizontal)
+    ldi r20, 8
+    clr r21
+reverse_bit_loop:
+    rol temp2
+    ror r21
+    dec r20
+    brne reverse_bit_loop
+    mov temp2, r21
+    
     rcall max7219_write
     inc temp
     cpi temp, 9
     brne refresh_loop
+    
+    pop r21
+    pop r20
     pop temp2
     pop temp
     ret

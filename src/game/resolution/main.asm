@@ -202,7 +202,7 @@ resolution_plyr_loop_jmp:
     rjmp resolution_plyr_loop
     
 resolution_finished:
-    ldi active_plyr, 1 ; comecar no jogador 1
+    ldi active_plyr, 1 ; começar no jogador 1
     ldi fsm_state, STATE_MAIN_MENU
     
     pop ZH

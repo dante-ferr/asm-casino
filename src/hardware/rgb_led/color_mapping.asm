@@ -22,6 +22,7 @@ RGB_Set_By_Number:
     
     lpm temp, Z ; Carrega o tipo de cor
     
+    ; Desvia para a rotina correspondente ao tipo de cor carregado
     cpi temp, COLOR_GREEN
     breq rgb_set_g
     cpi temp, COLOR_RED
@@ -31,12 +32,15 @@ RGB_Set_By_Number:
     rjmp rgb_done
     
 rgb_set_g:
+    ; Acende o LED Verde
     sbi PORTD, RGB_GREEN
     rjmp rgb_done
 rgb_set_r:
+    ; Acende o LED Vermelho
     sbi PORTD, RGB_RED
     rjmp rgb_done
 rgb_set_b:
+    ; Acende o LED Azul/Preto
     sbi PORTD, RGB_BLACK
     
 rgb_done:

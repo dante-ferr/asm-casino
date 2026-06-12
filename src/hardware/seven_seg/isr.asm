@@ -22,7 +22,7 @@ isr_players_sel:
     ; --- SOFT PWM EM SEGUNDO PLANO ---
     lds temp, RAM_PWM_COUNTER
     inc temp
-    andi temp, 0x07 ; modulo 8
+    andi temp, 0x07 ; módulo 8
     sts RAM_PWM_COUNTER, temp
     
     ; Calcula os bits do LED RGB no r23 (PD1=G, PD2=R, PD3=B)

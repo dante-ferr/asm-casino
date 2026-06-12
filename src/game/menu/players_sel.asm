@@ -7,7 +7,7 @@ num_players_loop:
     push temp
     
     pop temp
-    cpi temp, 1 ; Botão A -> incrementa jogadores
+    cpi temp, 2 ; Botão B -> incrementa jogadores
     brne num_players_check_b
     
     ; Lê a quantidade atual de jogadores
@@ -21,7 +21,7 @@ save_num_players_inc:
     rjmp num_players_tick
     
 num_players_check_b:
-    cpi temp, 2 ; Botão B -> decrementa jogadores
+    cpi temp, 1 ; Botão A -> decrementa jogadores
     brne num_players_select
     
     lds temp2, RAM_NUM_PLAYERS

@@ -1,7 +1,7 @@
-; Atraso de ~4.5 us para sincronia do barramento I2C
+; Atraso para sincronia do barramento I2C (Slower for physical hardware robustness)
 i2c_delay:
     push temp2
-    ldi temp2, 20
+    ldi temp2, 80
 i2c_delay_loop:
     dec temp2
     brne i2c_delay_loop

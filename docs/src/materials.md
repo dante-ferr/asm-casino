@@ -32,5 +32,7 @@ Lista de componentes e materiais para a montagem física do projeto da Roleta Fr
 ---
 
 ## Estrutura
-- 2x Protoboards de 400 pontos (MUDAR DEPOIS - talvez mais)
-- Cabos jumper Macho-Macho e Macho-Fêmea
+- 2x Protoboards de 400 pontos
+- Cabos jumper Macho-Macho, Macho-Fêmea e Fêmea-Fêmea
+- Caixa de sapato
+- Tinta acrílica marrom

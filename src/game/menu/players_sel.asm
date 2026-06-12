@@ -1,4 +1,4 @@
-; FSM State: Select Number of Players Screen and Logic
+; Estado da FSM: Tela e lógica de seleção do número de jogadores
 
 Run_Num_Players:
     rcall Show_Num_Players_Menu
@@ -7,28 +7,28 @@ num_players_loop:
     push temp
     
     pop temp
-    cpi temp, 1            ; Button A -> Increment players
+    cpi temp, 2 ; Botão B -> incrementa jogadores
     brne num_players_check_b
     
-    ; Get current count from RAM_NUM_PLAYERS
+    ; Lê a quantidade atual de jogadores
     lds temp2, RAM_NUM_PLAYERS
     inc temp2
     cpi temp2, MAX_PLAYERS + 1
     brlo save_num_players_inc
-    ldi temp2, MIN_PLAYERS           ; wrap-around to MIN_PLAYERS
+    ldi temp2, MIN_PLAYERS ; retorna para o mínimo
 save_num_players_inc:
     sts RAM_NUM_PLAYERS, temp2
     rjmp num_players_tick
     
 num_players_check_b:
-    cpi temp, 2            ; Button B -> Decrement players
+    cpi temp, 1 ; Botão A -> decrementa jogadores
     brne num_players_select
     
     lds temp2, RAM_NUM_PLAYERS
     dec temp2
     cpi temp2, MIN_PLAYERS
     brsh save_num_players_dec
-    ldi temp2, MAX_PLAYERS           ; wrap-around to MAX_PLAYERS
+    ldi temp2, MAX_PLAYERS ; retorna para o máximo
 save_num_players_dec:
     sts RAM_NUM_PLAYERS, temp2
     rjmp num_players_tick
@@ -39,14 +39,14 @@ num_players_tick:
     rjmp num_players_loop
     
 num_players_select:
-    cpi temp, 3            ; Button Select -> Confirm selection
+    cpi temp, 3 ; Botão Select -> confirma a seleção
     brne num_players_loop
     
     rcall Buzzer_Beep
     ldi fsm_state, STATE_MAIN_MENU
     ret
 
-; Show select players screen on LCD
+; Exibe a tela de seleção de jogadores no LCD
 Show_Num_Players_Menu:
     push temp
     push temp2
@@ -55,14 +55,14 @@ Show_Num_Players_Menu:
     push ZL
     push ZH
     
-    ; Draw group icon on LED matrix
+    ; Desenha o ícone do grupo na matriz de LEDs
     ldi ZL, low(icon_group * 2)
     ldi ZH, high(icon_group * 2)
     rcall Matrix_Draw_Icon
     
     rcall LCD_Clear
     
-    ; Line 0: "Qtd Jogadores:"
+    ; Linha 0
     ldi temp, 0
     ldi temp2, 0
     rcall LCD_Set_Cursor
@@ -70,7 +70,7 @@ Show_Num_Players_Menu:
     ldi ZH, high(msg_num_players_title * 2)
     rcall LCD_Print_Msg
     
-    ; Line 1: "[Num]     (A/B/S)"
+    ; Linha 1
     ldi temp, 1
     ldi temp2, 0
     rcall LCD_Set_Cursor

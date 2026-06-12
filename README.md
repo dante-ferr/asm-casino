@@ -1,33 +1,51 @@
-# Roleta Francesa "En Prison" - Assembly AVR
+# Roleta Francesa - Assembly AVR
 
-Este projeto consiste em uma implementação em **Assembly AVR** da **Roleta Francesa** para o microcontrolador ATmega328P (utilizado no Arduino Uno), desenvolvida com foco em simulação no software **SimulIDE** e também compatível com hardware físico.
+Este projeto é uma implementação em Assembly AVR do jogo de Roleta Francesa para o microcontrolador ATmega328P (usado no Arduino Uno). O circuito e a simulação foram desenvolvidos no software SimulIDE, sendo também compatível com hardware físico.
 
-A roleta francesa neste projeto inclui regras clássicas de apostas (internas e externas) e a mecânica especial **"En Prison"** para resultados de valor zero em apostas simples.
+A implementação inclui o sistema de apostas, além da regra especial "En Prison" para apostas simples quando o resultado é zero.
 
 ---
 
 ## 📖 Documentação do Projeto
 
-A documentação detalhada com guias de hardware, regras e organização do código está hospedada no GitHub Pages:
+A documentação detalhada com guias de hardware, regras e estrutura de código está disponível em:
 
-👉 **[Acesse a Documentação Online (GitHub Pages)](https://dante-ferr.github.io/asm-casino/)**
-
----
-
-## ⚙️ Comandos do Makefile
-
-O projeto inclui comandos no [Makefile](file:///home/dante/Code/projects/asm-casino/Makefile) para auxiliar na geração e visualização da documentação localmente utilizando o `mdBook`.
-
-*   **`make docs`**:
-    Compila a documentação a partir da pasta `/docs` e gera os arquivos estáticos HTML na pasta `/docs/book/`.
-*   **`make docs-serve`**:
-    Inicia um servidor web de desenvolvimento local (por padrão em `http://localhost:3000`) que atualiza automaticamente no navegador sempre que um arquivo de documentação for modificado.
+👉 **[Acesse a Documentação Online](https://dante-ferr.github.io/asm-casino/)**
 
 ---
 
-## 👥 Autores
+## 🛠️ Compilação e Build
 
-- **Dante Ferreira** ([dante-ferr](https://github.com/dante-ferr))
-- **André Barata**
-- **Guilherme Souza**
-- **Paulo Ravazzano** ([Johannesgauss](https://github.com/Johannesgauss))
+O projeto é compilado utilizando o assembler `avra`. O `Makefile` na raiz facilita o processo de build e a limpeza de arquivos temporários.
+
+### Requisitos
+
+- `avra` (AVR Assembler)
+- `make`
+
+### Como compilar
+
+Para compilar o código e gerar o arquivo HEX final (`src/main.hex`):
+
+```bash
+make
+```
+
+O comando acima compila o código-fonte e remove automaticamente os arquivos intermediários gerados pelo assembler (como `.obj`, `.lst`, `.cof`, `.eep`).
+
+### Limpeza de arquivos temporários
+
+Para remover o arquivo HEX gerado e limpar o ambiente de build:
+
+```bash
+make clean
+```
+
+---
+
+## ⚙️ Documentação Local (mdBook)
+
+Se preferir gerar ou visualizar a documentação localmente utilizando o `mdBook`:
+
+* **`make docs`**: Compila a documentação a partir da pasta `/docs` e gera os arquivos estáticos na pasta `/docs/book/`.
+* **`make docs-serve`**: Inicia um servidor web local em `http://localhost:3000` com live-reload para edição da documentação em tempo real.

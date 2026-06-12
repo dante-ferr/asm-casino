@@ -1,4 +1,4 @@
-; Betting Screens Layout and Rendering Logic
+; Layout das telas de apostas e lógica de renderização
 
 Show_Betting_Screen:
     push temp
@@ -8,62 +8,64 @@ Show_Betting_Screen:
     push ZL
     push ZH
     
-    ; Update 7-segment display to show current player ID
+    ; Atualiza o display de 7 segmentos com o ID do jogador atual
     sts RAM_ROUND_NUM, active_plyr
     
-    ; Update RGB LED color to match current player ID
+    ; Atualiza a cor do LED RGB correspondente ao ID do jogador
     mov temp, active_plyr
     call RGB_Set_By_Player
     
     call LCD_Clear
     
-    ; 1. Draw question mark icon on matrix
+    ; Desenha o ícone de interrogação na matriz
     ldi ZL, low(icon_question * 2)
     ldi ZH, high(icon_question * 2)
     call Matrix_Draw_Icon
     
     call Player_Get_Pointer
-    ldd temp, Z+2           ; Load status
-    sbrc temp, 0            ; Skip if NOT En Prison
+    ldd temp, Z+2 ; lê o byte de status
+    sbrc temp, 0 ; pula se NÃO estiver na prisão
     rjmp show_betting_prison
     
-    ; Check which mode we are in (sys_flags: 0 = Target, 1 = Value, 2 = Confirm)
+    ; Verifica o modo de edição (0 = Alvo, 1 = Valor, 2 = Confirmação)
     mov temp, sys_flags
-    andi temp, 0x7F         ; clear bit 7 (toggle bit) for mode comparison
+    andi temp, 0x7F ; limpa o bit 7 para comparação de modo
     
-    cpi temp, 2             ; Confirm mode?
+    cpi temp, 2 ; Modo confirmação?
     brne show_betting_normal
     rjmp show_betting_confirm
 show_betting_normal:
     
-    ; --- TARGET & VALUE EDIT MODES ---
-    ; Line 0: "P[ID]: [Target] [Cursor]"
+    ; --- MODOS DE EDIÇÃO DE ALVO E VALOR ---
+    ; Linha 0: "P[ID]: [Target] [Cursor]"
+    ; Posiciona o cursor no início da linha 0
     ldi temp, 0
     ldi temp2, 0
     call LCD_Set_Cursor
     
+    ; Escreve "P[ID]: " no display LCD
     ldi temp, 'P'
-    call lcd_write_data
+    call lcd_write_data ; Escreve o caractere 'P'
     mov temp, active_plyr
     subi temp, -'0'
-    call lcd_write_data
+    call lcd_write_data ; Escreve o ID do jogador ativo convertido em caractere
     ldi temp, ':'
-    call lcd_write_data
+    call lcd_write_data ; Escreve ':'
     ldi temp, ' '
-    call lcd_write_data
+    call lcd_write_data ; Escreve o espaço em branco
     
     call Player_Get_Pointer
-    ldd temp, Z+4           ; selection index (0-42)
+    ldd temp, Z+4 ; índice de seleção
     
-    ; Display target name
+    ; Exibe o nome do alvo
     cpi temp, FIRST_INTERNAL_IDX
     brsh show_tgt_num
     
-    ; External Target (0-5)
+    ; Alvo externo
     ldi ZL, low(target_strings_table * 2)
     ldi ZH, high(target_strings_table * 2)
     add ZL, temp
-    add ZL, temp            ; index * 2
+    add ZL, temp ; multiplica índice por 2
     clr temp2
     adc ZH, temp2
     
@@ -75,7 +77,7 @@ show_betting_normal:
     rjmp show_tgt_cursor_check
     
 show_tgt_num:
-    ; Print "NUM: [temp - FIRST_INTERNAL_IDX]"
+    ; Imprime o prefixo do número interno
     ldi ZL, low(msg_num_prefix * 2)
     ldi ZH, high(msg_num_prefix * 2)
     call LCD_Print_Msg
@@ -87,7 +89,7 @@ show_tgt_num:
     call LCD_Print_Dec16
     
 show_tgt_cursor_check:
-    ; Print cursor '<' if sys_flags (mode) is 0
+    ; Imprime o cursor '<' se o modo for 0 (Edição de Alvo)
     mov temp, sys_flags
     andi temp, 0x7F
     tst temp
@@ -99,7 +101,7 @@ show_tgt_cursor_check:
     call lcd_write_data
     
 show_bet_val_line:
-    ; Line 1: "Apos: [Val] [Cursor] (A/B/S)"
+    ; Linha 1: "Aposta: [Val] [Cursor] (A/B/S)"
     ldi temp, 1
     ldi temp2, 0
     call LCD_Set_Cursor
@@ -113,12 +115,13 @@ show_bet_val_line:
     ldd r24, Z+6
     call LCD_Print_Dec16
     
-    ; Print cursor '<' if sys_flags (mode) is 1
+    ; Imprime o cursor '<' se o modo for 1 (Edição de Valor)
     mov temp, sys_flags
     andi temp, 0x7F
     cpi temp, 1
     brne show_bet_val_keys
     
+    ; Escreve o cursor " <" para indicar o campo ativo de valor
     ldi temp, ' '
     call lcd_write_data
     ldi temp, '<'
@@ -136,25 +139,27 @@ show_bet_val_keys:
     pop temp2
     pop temp
     ret
-
+ 
 show_betting_confirm:
-    ; Line 0: "P[ID] Conf: [SIM / VOLTAR]"
+    ; Linha 0: "P[ID] Conf: [SIM / VOLTAR]"
+    ; Posiciona o cursor no início da linha 0 para confirmação
     ldi temp, 0
     ldi temp2, 0
     call LCD_Set_Cursor
     
+    ; Escreve "P[ID]" no início da tela de confirmação
     ldi temp, 'P'
     call lcd_write_data
     mov temp, active_plyr
     subi temp, -'0'
     call lcd_write_data
     
-    ; Print " Conf: "
+    ; Imprime o prefixo de confirmação
     ldi ZL, low(msg_conf_prefix * 2)
     ldi ZH, high(msg_conf_prefix * 2)
     call LCD_Print_Msg
     
-    ; Check if bit 7 of sys_flags is set (VOLTAR) or clear (SIM)
+    ; Verifica o bit 7 de sys_flags (VOLTAR ou SIM)
     sbrc sys_flags, 7
     rjmp show_conf_voltar
     
@@ -169,7 +174,7 @@ show_conf_voltar:
     call LCD_Print_Msg
     
 show_conf_val_line:
-    ; Line 1: "Apos: [Val] (A/B/S)"
+    ; Linha 1: "Aposta: [Val] (A/B/S)"
     ldi temp, 1
     ldi temp2, 0
     call LCD_Set_Cursor
@@ -194,13 +199,15 @@ show_conf_val_line:
     pop temp2
     pop temp
     ret
-
+ 
 show_betting_prison:
-    ; Line 0: "P[ID]: PRISAO"
+    ; Linha 0: "P[ID]: PRISÃO"
+    ; Posiciona o cursor no início da linha 0 para o estado de prisão
     ldi temp, 0
     ldi temp2, 0
     call LCD_Set_Cursor
     
+    ; Escreve "P[ID]" no cabeçalho
     ldi temp, 'P'
     call lcd_write_data
     mov temp, active_plyr
@@ -211,7 +218,7 @@ show_betting_prison:
     ldi ZH, high(msg_bet_prison_status * 2)
     call LCD_Print_Msg
     
-    ; Line 1: "Apos: [Val] (S)"
+    ; Linha 1: "Aposta: [Val] (S)"
     ldi temp, 1
     ldi temp2, 0
     call LCD_Set_Cursor

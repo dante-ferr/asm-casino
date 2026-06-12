@@ -1,4 +1,4 @@
-; Game Betting Phase FSM Loops and Handlers
+; Loops e tratadores da FSM para a fase de apostas
 
 Run_Choose_Cat:
     call Show_Betting_Screen
@@ -6,33 +6,33 @@ betting_phase_loop:
     call Wait_Button_Press
     push temp
     
-    ; Check if active player is in prison
+    ; Verifica se o jogador ativo está na prisão
     call Player_Get_Pointer
     ldd temp, Z+2
-    sbrc temp, 0            ; Skip if NOT En Prison
+    sbrc temp, 0 ; pula se NÃO estiver na prisão
     rjmp betting_phase_prison_handlers
     
     pop temp
     
-    ; Now temp contains the pressed button (1 = A, 2 = B, 3 = Select)
+    ; temp contém o botão pressionado (1 = A, 2 = B, 3 = Select)
     
-    cpi sys_flags, 0        ; Mode 0: Edit Target
+    cpi sys_flags, 0 ; Modo 0: Edita o alvo
     breq handle_mode_target
     
     mov temp2, sys_flags
     andi temp2, 0x7F
-    cpi temp2, 1            ; Mode 1: Edit Value
+    cpi temp2, 1 ; Modo 1: Edita o valor
     breq handle_mode_value
     
-    ; Mode 2: Confirm
+    ; Modo 2: Confirmação
     rjmp handle_mode_confirm
 
 handle_mode_target:
-    cpi temp, 1            ; Button A -> Decrement Target Index (with wrap-around)
+    cpi temp, 1 ; Botão A -> decrementa o índice do alvo
     brne target_check_b
     
     call Player_Get_Pointer
-    ldd temp2, Z+4          ; current selection index
+    ldd temp2, Z+4 ; índice de seleção atual
     tst temp2
     brne target_dec_no_wrap
     ldi temp2, NUM_BET_TARGETS
@@ -42,7 +42,7 @@ target_dec_no_wrap:
     rjmp betting_phase_tick
     
 target_check_b:
-    cpi temp, 2            ; Button B -> Increment Target Index (with wrap-around)
+    cpi temp, 2 ; Botão B -> incrementa o índice do alvo
     brne target_check_select
     
     call Player_Get_Pointer
@@ -56,47 +56,47 @@ target_inc_save:
     rjmp betting_phase_tick
     
 target_check_select:
-    cpi temp, 3            ; Button Select -> Transition to Mode 1 (Edit Value)
+    cpi temp, 3 ; Botão Select -> transiciona para o Modo 1 (Edita valor)
     brne target_loop_jmp
     
     call Buzzer_Beep
-    ldi sys_flags, 1        ; Set Mode to 1
+    ldi sys_flags, 1 ; define o modo como 1
     rjmp betting_phase_tick
 
 target_loop_jmp:
     rjmp betting_phase_loop
 
 handle_mode_value:
-    cpi temp, 1            ; Button A -> Increment Value (+100)
+    cpi temp, 2 ; Botão B -> incrementa valor (+100)
     brne value_check_b
     
-    ; Get player balance in r19:r18 (avoid clobbering sys_flags in r22)
-    call Player_Get_Balance ; returns balance in r25:r24
+    ; Lê o saldo do jogador em r19:r18
+    call Player_Get_Balance ; retorna saldo em r25:r24
     mov r18, r24
-    mov r19, r25            ; r19:r18 = balance
+    mov r19, r25 ; r19:r18 = saldo
     
-    ; Get current bet value in r25:r24
-    call Player_Get_Pointer ; Z points to player
+    ; Lê o valor da aposta atual em r25:r24
+    call Player_Get_Pointer ; Z aponta para o jogador
     ldd r25, Z+5
-    ldd r24, Z+6            ; r25:r24 = current bet value
+    ldd r24, Z+6 ; valor atual da aposta
     
-    ; If current bet >= balance, we cannot increment further
+    ; Se a aposta atual for maior ou igual ao saldo, impede o incremento
     cp r24, r18
     cpc r25, r19
-    brsh value_tick_beep    ; error beep if already at balance
+    brsh value_tick_beep ; bipe de erro se já atingiu o saldo
     
-    ; Add BET_STEP points
+    ; Adiciona o passo de aposta
     ldi temp2, low(BET_STEP)
     add r24, temp2
     ldi temp2, high(BET_STEP)
     adc r25, temp2
     
-    ; Double check if exceeds balance
+    ; Verifica se ultrapassa o saldo
     cp r18, r24
     cpc r19, r25
-    brsh value_save_new     ; balance >= new_bet -> save
+    brsh value_save_new ; saldo >= aposta -> salva
     
-    ; Exceeds -> cap at balance
+    ; Caso ultrapasse, limita ao valor do saldo
     mov r24, r18
     mov r25, r19
     
@@ -111,19 +111,19 @@ value_tick_beep:
     rjmp betting_phase_loop
 
 value_check_b:
-    cpi temp, 2            ; Button B -> Decrement Value (-100)
+    cpi temp, 1 ; Botão A -> decrementa valor (-100)
     brne value_check_select
     
     call Player_Get_Pointer
     ldd r25, Z+5
     ldd r24, Z+6
     
-    ; If value is 0, we cannot decrement further
+    ; Se o valor for 0, impede o decremento
     mov temp2, r24
     or temp2, r25
     breq value_tick_beep
     
-    ; Subtract BET_STEP points
+    ; Subtrai o passo de aposta
     ldi temp2, low(BET_STEP)
     sub r24, temp2
     ldi temp2, high(BET_STEP)
@@ -135,62 +135,62 @@ value_check_b:
     rjmp betting_phase_tick
     
 value_check_select:
-    cpi temp, 3            ; Button Select -> Transition to Mode 2 (Confirm)
+    cpi temp, 3 ; Botão Select -> transiciona para o Modo 2 (Confirmar)
     brne value_loop_jmp
     
     call Buzzer_Beep
-    ldi sys_flags, 2        ; Set Mode to 2 (Confirm, default to SIM)
+    ldi sys_flags, 2 ; define o modo como 2
     rjmp betting_phase_tick
 
 value_loop_jmp:
     rjmp betting_phase_loop
 
 handle_mode_confirm:
-    cpi temp, 1            ; Button A -> Toggle selection
+    cpi temp, 1 ; Botão A -> alterna a seleção
     breq toggle_confirm
-    cpi temp, 2            ; Button B -> Toggle selection
+    cpi temp, 2 ; Botão B -> alterna a seleção
     breq toggle_confirm
     
-    cpi temp, 3            ; Button Select -> Confirm action
+    cpi temp, 3 ; Botão Select -> confirma a ação
     brne confirm_loop_jmp
     
-    ; Check if we confirmed (bit 7 of sys_flags is 0) or returned (bit 7 of sys_flags is 1)
+    ; Verifica se confirmou ou se retornou
     sbrc sys_flags, 7
-    rjmp return_to_target   ; If bit 7 is set, return to Edit Target
+    rjmp return_to_target ; se o bit 7 estiver ativo, retorna para Edição de Alvo
     
-    ; CONFIRMED!
+    ; CONFIRMADO!
     call Buzzer_Beep
     
-    ; Map selection index to real bet type/target
+    ; Mapeia o índice de seleção para o tipo/alvo real de aposta
     call Player_Get_Pointer
-    ldd temp, Z+4           ; selection index
-    call Map_Selection_To_Bet ; returns type in temp, target in temp2
+    ldd temp, Z+4 ; índice de seleção
+    call Map_Selection_To_Bet ; retorna o tipo em temp e o alvo em temp2
     
     call Player_Get_Pointer
-    std Z+3, temp           ; save real bet type
-    std Z+4, temp2          ; save real bet target
+    std Z+3, temp ; salva o tipo real da aposta
+    std Z+4, temp2 ; salva o alvo real da aposta
     
-    ; Deduct the bet value from player's balance!
+    ; Deduz o valor da aposta do saldo do jogador
     ldd r19, Z+5
-    ldd r18, Z+6            ; r19:r18 = bet value
+    ldd r18, Z+6 ; valor da aposta
     
-    call Player_Get_Balance ; returns balance in r25:r24
+    call Player_Get_Balance ; retorna o saldo em r25:r24
     sub r24, r18
-    sbc r25, r19            ; subtract bet value
-    call Player_Set_Balance ; save new balance
+    sbc r25, r19 ; subtrai o valor da aposta
+    call Player_Set_Balance ; salva o novo saldo
     
-    ldi sys_flags, 0        ; Reset mode for next player
+    ldi sys_flags, 0 ; reinicia o modo para o próximo jogador
     rjmp betting_phase_next_player
     
 toggle_confirm:
     call Buzzer_Tick
     ldi temp2, 0x80
-    eor sys_flags, temp2    ; Toggle bit 7 of sys_flags
+    eor sys_flags, temp2 ; inverte o bit 7 do sys_flags
     rjmp betting_phase_tick
     
 return_to_target:
     call Buzzer_Beep
-    ldi sys_flags, 0        ; Reset mode to Edit Target
+    ldi sys_flags, 0 ; reinicia o modo para Edição de Alvo
     rjmp betting_phase_tick
 
 confirm_loop_jmp:
@@ -202,23 +202,23 @@ betting_phase_tick:
     rjmp betting_phase_loop
 
 betting_phase_next_player:
-    ; Move to next player
+    ; Avança para o próximo jogador
     inc active_plyr
     lds temp, RAM_NUM_PLAYERS
     inc temp
     cp active_plyr, temp
     brsh betting_phase_done
     
-    ; Go to next player's betting screen
+    ; Vai para a tela de aposta do próximo jogador
     call Show_Betting_Screen
     rjmp betting_phase_loop
     
 betting_phase_done:
-    call Check_Any_Bets    ; returns temp = 1 (has bets) or 0 (no bets)
+    call Check_Any_Bets ; retorna temp = 1 (tem apostas) ou 0 (sem apostas)
     tst temp
     brne proceed_to_spin
     
-    ; ERROR: No bets placed!
+    ; ERRO: Nenhuma aposta realizada!
     call LCD_Clear
     ldi temp, 0
     ldi temp2, 0
@@ -236,7 +236,7 @@ betting_phase_done:
     
     call Buzzer_Failure
     
-    ; Wait 4.0 seconds (16 iterations of 250ms)
+    ; Aguarda 4 segundos
     ldi temp, 16
 wait_loop_no_bets:
     push temp
@@ -246,17 +246,17 @@ wait_loop_no_bets:
     dec temp
     brne wait_loop_no_bets
     
-    ldi active_plyr, 1      ; Reset to player 1
-    ldi fsm_state, STATE_MAIN_MENU ; Return to menu
+    ldi active_plyr, 1 ; começar no jogador 1
+    ldi fsm_state, STATE_MAIN_MENU ; retorna ao menu
     ret
 
 proceed_to_spin:
-    ldi active_plyr, 1      ; Reset to player 1
-    ldi fsm_state, STATE_SPIN_ROULET ; Go to spin!
+    ldi active_plyr, 1 ; começar no jogador 1
+    ldi fsm_state, STATE_SPIN_ROULET ; inicia o giro
     ret
 
-; Helper: Checks if at least one active player has a non-zero bet
-; Outputs: temp = 1 (has bets), 0 (no bets)
+; Função auxiliar: verifica se há pelo menos uma aposta não zerada
+; Saídas: temp = 1 (tem apostas), 0 (não tem apostas)
 Check_Any_Bets:
     push temp2
     push r20
@@ -264,23 +264,23 @@ Check_Any_Bets:
     push ZL
     push ZH
     
-    ldi r21, 1              ; Start checking from Player 1
+    ldi r21, 1 ; inicia a verificação pelo jogador 1
 check_bets_loop:
-    ; Check if r21 > RAM_NUM_PLAYERS
+    ; Verifica se r21 > quantidade de jogadores ativos
     lds temp, RAM_NUM_PLAYERS
     cp temp, r21
-    brlo no_bets_found      ; If RAM_NUM_PLAYERS < r21, we checked all active players
+    brlo no_bets_found ; se RAM_NUM_PLAYERS < r21, encerra a busca
     
-    ; Temporarily set active_plyr to get pointer
+    ; Define temporariamente active_plyr para obter o ponteiro
     push active_plyr
     mov active_plyr, r21
-    call Player_Get_Pointer ; Z points to player
+    call Player_Get_Pointer ; Z aponta para o jogador
     pop active_plyr
     
-    ldd temp, Z+5           ; bet value high
-    ldd temp2, Z+6          ; bet value low
+    ldd temp, Z+5 ; parte alta da aposta
+    ldd temp2, Z+6 ; parte baixa da aposta
     or temp, temp2
-    brne bet_found          ; Found a non-zero bet!
+    brne bet_found ; aposta encontrada!
     
     inc r21
     rjmp check_bets_loop
@@ -302,15 +302,15 @@ check_bets_done:
 
 betting_phase_prison_handlers:
     pop temp
-    cpi temp, 3            ; Button Select?
+    cpi temp, 3 ; Botão Select?
     breq betting_phase_select_prison
     
-    ; A or B pressed while in prison -> play error beep and ignore
+    ; A ou B pressionado na prisão -> toca som de erro e ignora
     call Buzzer_Failure
     rjmp betting_phase_loop
     
 betting_phase_select_prison:
-    ; Confirm prison locked bet and move to next player
+    ; Confirma a aposta travada da prisão e passa para o próximo
     call Buzzer_Beep
     rjmp betting_phase_next_player
 
@@ -320,7 +320,7 @@ Run_Choose_Bet:
 Run_Confirm_Bet:
     ret
 
-; Submodule Inclusions
+; Inclusão de subódulos
 .include "game/betting/screen.asm"
 .include "game/betting/map.asm"
 .include "game/betting/strings.asm"

@@ -1,27 +1,28 @@
-; Set RGB LED according to roulette number in temp (0-36)
-; Inputs:
-;   temp = drawn number (0-36)
+; Configura o LED RGB de acordo com o número da roleta em temp (0-36)
+; Entradas:
+;   temp = número sorteado (0-36)
 RGB_Set_By_Number:
     push temp
     push ZL
     push ZH
     
-    ; Clear current color first
+    ; Apaga o LED antes
     rcall RGB_Clear
     
-    ; If number >= ROULETTE_SLOTS, ignore
+    ; Se o número for inválido, ignora
     cpi temp, ROULETTE_SLOTS
     brsh rgb_done
     
-    ; Load Z with color_table * 2 (Flash byte address)
+    ; Carrega o endereço da color_table na Flash em Z
     ldi ZL, low(color_table * 2)
     ldi ZH, high(color_table * 2)
     add ZL, temp
     clr temp
     adc ZH, temp
     
-    lpm temp, Z             ; Load color type (COLOR_GREEN, COLOR_RED, COLOR_BLACK)
+    lpm temp, Z ; Carrega o tipo de cor
     
+    ; Desvia para a rotina correspondente ao tipo de cor carregado
     cpi temp, COLOR_GREEN
     breq rgb_set_g
     cpi temp, COLOR_RED
@@ -31,12 +32,15 @@ RGB_Set_By_Number:
     rjmp rgb_done
     
 rgb_set_g:
+    ; Acende o LED Verde
     sbi PORTD, RGB_GREEN
     rjmp rgb_done
 rgb_set_r:
+    ; Acende o LED Vermelho
     sbi PORTD, RGB_RED
     rjmp rgb_done
 rgb_set_b:
+    ; Acende o LED Azul/Preto
     sbi PORTD, RGB_BLACK
     
 rgb_done:
@@ -45,8 +49,8 @@ rgb_done:
     pop temp
     ret
 
-; Lookup table for roulette number colors
+; Tabela de cores para os números da roleta
 color_table:
     .db COLOR_GREEN, COLOR_RED, COLOR_BLACK, COLOR_RED, COLOR_BLACK, COLOR_RED, COLOR_BLACK, COLOR_RED, COLOR_BLACK, COLOR_RED, COLOR_BLACK, COLOR_BLACK, COLOR_RED, COLOR_BLACK, COLOR_RED, COLOR_BLACK
     .db COLOR_RED, COLOR_BLACK, COLOR_RED, COLOR_RED, COLOR_BLACK, COLOR_RED, COLOR_BLACK, COLOR_RED, COLOR_BLACK, COLOR_RED, COLOR_BLACK, COLOR_RED, COLOR_BLACK, COLOR_BLACK, COLOR_RED, COLOR_BLACK
-    .db COLOR_RED, COLOR_BLACK, COLOR_RED, COLOR_BLACK, COLOR_RED, COLOR_GREEN     ; padded to even length
+    .db COLOR_RED, COLOR_BLACK, COLOR_RED, COLOR_BLACK, COLOR_RED, COLOR_GREEN ; alinhado para tamanho par

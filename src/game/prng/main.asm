@@ -1,12 +1,12 @@
-; Pseudo-Random Number Generator (PRNG) using hardware timer 1
-; Returns a pseudo-random number 0-36 in temp2
+; Gerador de números pseudoaleatórios (PRNG) usando o timer 1 do hardware
+; Retorna um número pseudoaleatório de 0 a 36 em temp2
 
 PRNG_Spin:
     push temp
-    lds temp2, TCNT1L       ; Read Timer 1 low byte (incrementing at 16MHz)
+    lds temp2, TCNT1L ; lê o byte baixo do Timer 1 (incrementa a 16MHz)
 prng_mod_loop:
     cpi temp2, ROULETTE_SLOTS
-    brlo prng_mod_done      ; If temp2 < ROULETTE_SLOTS, we have our modulo result
+    brlo prng_mod_done ; se temp2 for menor que as posições da roleta, encerra o cálculo do resto
     subi temp2, ROULETTE_SLOTS
     rjmp prng_mod_loop
 prng_mod_done:

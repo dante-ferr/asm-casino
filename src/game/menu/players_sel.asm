@@ -2,49 +2,49 @@
 
 Run_Num_Players:
     rcall Show_Num_Players_Menu
-num_players_loop:
-    rcall Wait_Button_Press
-    push temp
-    
-    pop temp
-    cpi temp, 2 ; Botão B -> incrementa jogadores
-    brne num_players_check_b
-    
-    ; Lê a quantidade atual de jogadores
-    lds temp2, RAM_NUM_PLAYERS
-    inc temp2
-    cpi temp2, MAX_PLAYERS + 1
-    brlo save_num_players_inc
-    ldi temp2, MIN_PLAYERS ; retorna para o mínimo
-save_num_players_inc:
-    sts RAM_NUM_PLAYERS, temp2
-    rjmp num_players_tick
-    
-num_players_check_b:
-    cpi temp, 1 ; Botão A -> decrementa jogadores
-    brne num_players_select
-    
-    lds temp2, RAM_NUM_PLAYERS
-    dec temp2
-    cpi temp2, MIN_PLAYERS
-    brsh save_num_players_dec
-    ldi temp2, MAX_PLAYERS ; retorna para o máximo
-save_num_players_dec:
-    sts RAM_NUM_PLAYERS, temp2
-    rjmp num_players_tick
-    
-num_players_tick:
-    rcall Buzzer_Tick
-    rcall Show_Num_Players_Menu
-    rjmp num_players_loop
-    
-num_players_select:
-    cpi temp, 3 ; Botão Select -> confirma a seleção
-    brne num_players_loop
-    
-    rcall Buzzer_Beep
-    ldi fsm_state, STATE_MAIN_MENU
-    ret
+    num_players_loop:
+        rcall Wait_Button_Press
+        push temp
+        
+        pop temp
+        cpi temp, 2 ; Botão B -> incrementa jogadores
+        brne num_players_check_b
+        
+        ; Lê a quantidade atual de jogadores
+        lds temp2, RAM_NUM_PLAYERS
+        inc temp2
+        cpi temp2, MAX_PLAYERS + 1
+        brlo save_num_players_inc
+        ldi temp2, MIN_PLAYERS ; retorna para o mínimo
+    save_num_players_inc:
+        sts RAM_NUM_PLAYERS, temp2
+        rjmp num_players_tick
+        
+    num_players_check_b:
+        cpi temp, 1 ; Botão A -> decrementa jogadores
+        brne num_players_select
+        
+        lds temp2, RAM_NUM_PLAYERS
+        dec temp2
+        cpi temp2, MIN_PLAYERS
+        brsh save_num_players_dec
+        ldi temp2, MAX_PLAYERS ; retorna para o máximo
+    save_num_players_dec:
+        sts RAM_NUM_PLAYERS, temp2
+        rjmp num_players_tick
+        
+    num_players_tick:
+        rcall Buzzer_Tick
+        rcall Show_Num_Players_Menu
+        rjmp num_players_loop
+        
+    num_players_select:
+        cpi temp, 3 ; Botão Select -> confirma a seleção
+        brne num_players_loop
+        
+        rcall Buzzer_Beep
+        ldi fsm_state, STATE_MAIN_MENU
+        ret
 
 ; Exibe a tela de seleção de jogadores no LCD
 Show_Num_Players_Menu:

@@ -2,66 +2,66 @@
 
 Run_Set_Credits:
     rcall Show_Credits_Menu
-set_credits_loop:
-    rcall Wait_Button_Press
-    push temp
-    
-    pop temp
-    cpi temp, 2 ; Botão B -> adiciona 100 pontos
-    brne set_credits_b
-    
-    ; Lê o saldo atual (r25:r24)
-    rcall Player_Get_Balance
-    
-    ; Verifica o limite máximo
-    cpi r24, low(CREDIT_MAX_LIMIT)
-    ldi temp2, high(CREDIT_MAX_LIMIT)
-    cpc r25, temp2
-    brsh set_credits_tick ; ignora a adição se já estiver no limite máximo
-    
-    ; Adiciona os pontos do passo de crédito
-    ldi temp2, low(CREDIT_STEP)
-    add r24, temp2
-    ldi temp2, high(CREDIT_STEP)
-    adc r25, temp2
-    rcall Player_Set_Balance
-    
-set_credits_tick:
-    rcall Buzzer_Tick
-    rcall Show_Credits_Menu
-    rjmp set_credits_loop
-    
-set_credits_b:
-    cpi temp, 1 ; Botão A -> subtrai 100 pontos
-    brne set_credits_select
-    
-    ; Lê o saldo atual (r25:r24)
-    rcall Player_Get_Balance
-    
-    ; Verifica o limite mínimo
-    cpi r24, low(CREDIT_MIN_LIMIT)
-    ldi temp2, high(CREDIT_MIN_LIMIT)
-    cpc r25, temp2
-    breq set_credits_tick ; ignora a subtração se já estiver no limite mínimo
-    
-    ; Subtrai os pontos do passo de crédito
-    ldi temp2, low(CREDIT_STEP)
-    sub r24, temp2
-    ldi temp2, high(CREDIT_STEP)
-    sbc r25, temp2
-    rcall Player_Set_Balance
-    rjmp set_credits_tick
-    
-set_credits_select:
-    cpi temp, 3 ; Botão Select -> confirma e retorna ao Menu Principal
-    brne set_credits_loop
-    
-    ; Toca o bipe de confirmação
-    rcall Buzzer_Beep
-    
-    ; Retorna para o estado do Menu Principal
-    ldi fsm_state, STATE_MAIN_MENU
-    ret
+    set_credits_loop:
+        rcall Wait_Button_Press
+        push temp
+        
+        pop temp
+        cpi temp, 2 ; Botão B -> adiciona 100 pontos
+        brne set_credits_b
+        
+        ; Lê o saldo atual (r25:r24)
+        rcall Player_Get_Balance
+        
+        ; Verifica o limite máximo
+        cpi r24, low(CREDIT_MAX_LIMIT)
+        ldi temp2, high(CREDIT_MAX_LIMIT)
+        cpc r25, temp2
+        brsh set_credits_tick ; ignora a adição se já estiver no limite máximo
+        
+        ; Adiciona os pontos do passo de crédito
+        ldi temp2, low(CREDIT_STEP)
+        add r24, temp2
+        ldi temp2, high(CREDIT_STEP)
+        adc r25, temp2
+        rcall Player_Set_Balance
+        
+    set_credits_tick:
+        rcall Buzzer_Tick
+        rcall Show_Credits_Menu
+        rjmp set_credits_loop
+        
+    set_credits_b:
+        cpi temp, 1 ; Botão A -> subtrai 100 pontos
+        brne set_credits_select
+        
+        ; Lê o saldo atual (r25:r24)
+        rcall Player_Get_Balance
+        
+        ; Verifica o limite mínimo
+        cpi r24, low(CREDIT_MIN_LIMIT)
+        ldi temp2, high(CREDIT_MIN_LIMIT)
+        cpc r25, temp2
+        breq set_credits_tick ; ignora a subtração se já estiver no limite mínimo
+        
+        ; Subtrai os pontos do passo de crédito
+        ldi temp2, low(CREDIT_STEP)
+        sub r24, temp2
+        ldi temp2, high(CREDIT_STEP)
+        sbc r25, temp2
+        rcall Player_Set_Balance
+        rjmp set_credits_tick
+        
+    set_credits_select:
+        cpi temp, 3 ; Botão Select -> confirma e retorna ao Menu Principal
+        brne set_credits_loop
+        
+        ; Toca o bipe de confirmação
+        rcall Buzzer_Beep
+        
+        ; Retorna para o estado do Menu Principal
+        ldi fsm_state, STATE_MAIN_MENU
+        ret
 
 ; Exibe a tela de configuração de créditos do jogador
 Show_Credits_Menu:

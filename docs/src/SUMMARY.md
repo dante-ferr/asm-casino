@@ -1,3 +1,0 @@
-# Summary
-
-- [Créditos](./credits.md)

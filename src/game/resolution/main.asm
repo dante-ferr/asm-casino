@@ -123,6 +123,13 @@ mul_35_loop:
 print_ext_win_val:
     mov r24, r18
     mov r25, r19
+    cpi r23, 6 ; Verifica se é Dúzia/Coluna (alvo >= 6)
+    brlo print_ext_1to1
+    
+    ; Pagamento de 2 para 1: multiplica o ganho exibido por 2
+    lsl r24
+    rol r25
+print_ext_1to1:
     call LCD_Print_Dec16
     rjmp resolution_show_balance
     

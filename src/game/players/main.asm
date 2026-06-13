@@ -154,3 +154,42 @@ Player_Set_Bet:
     pop ZH
     pop ZL
     ret
+
+; Inicializa as apostas/seleções de todos os jogadores antes do início da fase de apostas
+Init_Players_Bets_For_Round:
+    push temp
+    push temp2
+    push ZL
+    push ZH
+    push r20
+    
+    ldi ZL, low(PLAYER_DATA_START)
+    ldi ZH, high(PLAYER_DATA_START)
+    ldi r20, MAX_PLAYERS
+init_bets_loop:
+    ; Verifica se o jogador está na prisão (bit 0 do status)
+    ldd temp, Z+2
+    sbrc temp, 0
+    rjmp init_bets_skip_prison ; Se estiver na prisão, não zera a aposta (está retida!)
+    
+    ; Zera tipo de aposta (Z+3), alvo/seleção (Z+4) e valor (Z+5, Z+6)
+    ldi temp2, 0
+    std Z+3, temp2
+    std Z+4, temp2
+    std Z+5, temp2
+    std Z+6, temp2
+    
+init_bets_skip_prison:
+    ; Avança para o próximo jogador (tamanho de cada jogador é 16)
+    adiw ZL, 16
+    
+    dec r20
+    brne init_bets_loop
+    
+    pop r20
+    pop ZH
+    pop ZL
+    pop temp2
+    pop temp
+    ret
+

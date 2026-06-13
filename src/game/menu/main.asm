@@ -51,6 +51,9 @@ check_btn_select:
     ; Toca bipe de confirmação
     rcall Buzzer_Beep
     
+    ; Inicializa as apostas de todos os jogadores para começar limpo
+    rcall Init_Players_Bets_For_Round
+    
     ; Define o estado da FSM como STATE_CHOOSE_CAT para o jogador 1
     ldi fsm_state, STATE_CHOOSE_CAT
     ldi active_plyr, 1 ; começa no jogador 1

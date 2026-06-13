@@ -353,6 +353,8 @@ check_col_generic:
     tst r20
     breq jump_lose_colg
     mov r21, r20
+    cp r21, r22
+    brlo jump_lose_colg
     sub r21, r22
 check_col_mod3:
     cpi r21, 3

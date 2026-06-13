@@ -23,23 +23,23 @@ RGB_Set_By_Player:
     breq set_p4_color ; Jogador 4 -> Amarelo
     rjmp rgb_plyr_done
     
-set_p1_color:
-    ; Liga o LED Vermelho
-    sbi PORTD, RGB_RED
-    rjmp rgb_plyr_done
-set_p2_color:
-    ; Liga o LED Azul/Preto
-    sbi PORTD, RGB_BLACK
-    rjmp rgb_plyr_done
-set_p3_color:
-    ; Liga o LED Verde
-    sbi PORTD, RGB_GREEN
-    rjmp rgb_plyr_done
-set_p4_color:
-    ; Liga o LED Vermelho e o LED Verde (produz Amarelo)
-    sbi PORTD, RGB_RED
-    sbi PORTD, RGB_GREEN
-    
-rgb_plyr_done:
-    pop temp
-    ret
+    set_p1_color:
+        ; Liga o LED Vermelho
+        sbi PORTD, RGB_RED
+        rjmp rgb_plyr_done
+    set_p2_color:
+        ; Liga o LED Azul/Preto
+        sbi PORTD, RGB_BLACK
+        rjmp rgb_plyr_done
+    set_p3_color:
+        ; Liga o LED Verde
+        sbi PORTD, RGB_GREEN
+        rjmp rgb_plyr_done
+    set_p4_color:
+        ; Liga o LED Vermelho e o LED Verde (produz Amarelo)
+        sbi PORTD, RGB_RED
+        sbi PORTD, RGB_GREEN
+        
+    rgb_plyr_done:
+        pop temp
+        ret

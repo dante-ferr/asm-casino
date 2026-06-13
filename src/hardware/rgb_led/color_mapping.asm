@@ -31,23 +31,23 @@ RGB_Set_By_Number:
     breq rgb_set_b
     rjmp rgb_done
     
-rgb_set_g:
-    ; Acende o LED Verde
-    sbi PORTD, RGB_GREEN
-    rjmp rgb_done
-rgb_set_r:
-    ; Acende o LED Vermelho
-    sbi PORTD, RGB_RED
-    rjmp rgb_done
-rgb_set_b:
-    ; Acende o LED Azul/Preto
-    sbi PORTD, RGB_BLACK
-    
-rgb_done:
-    pop ZH
-    pop ZL
-    pop temp
-    ret
+    rgb_set_g:
+        ; Acende o LED Verde
+        sbi PORTD, RGB_GREEN
+        rjmp rgb_done
+    rgb_set_r:
+        ; Acende o LED Vermelho
+        sbi PORTD, RGB_RED
+        rjmp rgb_done
+    rgb_set_b:
+        ; Acende o LED Azul/Preto
+        sbi PORTD, RGB_BLACK
+        
+    rgb_done:
+        pop ZH
+        pop ZL
+        pop temp
+        ret
 
 ; Tabela de cores para os números da roleta
 color_table:

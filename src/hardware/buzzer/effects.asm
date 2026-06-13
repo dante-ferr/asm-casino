@@ -75,50 +75,50 @@ Buzzer_Play_Tone:
     
     mov r18, temp ; r18 = atraso do meio período
     mov r19, temp2 ; r19 = contador de ciclos
-buzzer_tone_loop:
-    sbi PORTD, BUZZER_PIN ; PD4 = 1
-    mov temp, r18
-    rcall buzzer_delay_loop
-    
-    cbi PORTD, BUZZER_PIN ; PD4 = 0
-    mov temp, r18
-    rcall buzzer_delay_loop
-    
-    dec r19
-    brne buzzer_tone_loop
-    
-    cbi DDRD, BUZZER_PIN ; restaura pino do buzzer como entrada
-    cbi PORTD, BUZZER_PIN ; garante pull-up desativado
-    rjmp buzzer_play_exit
+    buzzer_tone_loop:
+        sbi PORTD, BUZZER_PIN ; PD4 = 1
+        mov temp, r18
+        rcall buzzer_delay_loop
+        
+        cbi PORTD, BUZZER_PIN ; PD4 = 0
+        mov temp, r18
+        rcall buzzer_delay_loop
+        
+        dec r19
+        brne buzzer_tone_loop
+        
+        cbi DDRD, BUZZER_PIN ; restaura pino do buzzer como entrada
+        cbi PORTD, BUZZER_PIN ; garante pull-up desativado
+        rjmp buzzer_play_exit
 
-buzzer_rest:
-    ldi r18, 0 ; 0 mapeia para 256 no loop de atraso
-    mov r19, temp2 ; r19 = contador de ciclos
-buzzer_rest_loop:
-    mov temp, r18
-    rcall buzzer_delay_loop
-    mov temp, r18
-    rcall buzzer_delay_loop
-    dec r19
-    brne buzzer_rest_loop
+    buzzer_rest:
+        ldi r18, 0 ; 0 mapeia para 256 no loop de atraso
+        mov r19, temp2 ; r19 = contador de ciclos
+    buzzer_rest_loop:
+        mov temp, r18
+        rcall buzzer_delay_loop
+        mov temp, r18
+        rcall buzzer_delay_loop
+        dec r19
+        brne buzzer_rest_loop
 
-buzzer_play_exit:
-    pop r19
-    pop r18
-    pop temp2
-    pop temp
-    ret
+    buzzer_play_exit:
+        pop r19
+        pop r18
+        pop temp2
+        pop temp
+        ret
 
 ; Loop de atraso calibrado: cada unidade de temp é aprox 5 microssegundos a 16MHz
 buzzer_delay_loop:
     push temp2
-buzzer_delay_outer:
-    ldi temp2, 26 ; delay interno
-buzzer_delay_inner:
-    dec temp2
-    brne buzzer_delay_inner
-    
-    dec temp
-    brne buzzer_delay_outer
-    pop temp2
-    ret
+    buzzer_delay_outer:
+        ldi temp2, 26 ; delay interno
+    buzzer_delay_inner:
+        dec temp2
+        brne buzzer_delay_inner
+        
+        dec temp
+        brne buzzer_delay_outer
+        pop temp2
+        ret

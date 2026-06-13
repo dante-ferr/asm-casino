@@ -7,7 +7,7 @@
 ; Escreve comando no LCD (comando em temp)
 lcd_write_cmd:
     push temp2
-    ldi temp2, 0x08 ; RS = 0, BL = 1 (luz de fundo ligada)
+    ldi temp2, 0b1000 ; RS = 0, BL = 1 (luz de fundo ligada)
     rcall lcd_write_byte
     pop temp2
     
@@ -15,21 +15,21 @@ lcd_write_cmd:
     push temp
     push temp2
     ldi temp, 5
-lcd_cmd_delay_outer:
-    ldi temp2, 50
-lcd_cmd_delay_inner:
-    dec temp2
-    brne lcd_cmd_delay_inner
-    dec temp
-    brne lcd_cmd_delay_outer
-    pop temp2
-    pop temp
-    ret
+    lcd_cmd_delay_outer:
+        ldi temp2, 50
+    lcd_cmd_delay_inner:
+        dec temp2
+        brne lcd_cmd_delay_inner
+        dec temp
+        brne lcd_cmd_delay_outer
+        pop temp2
+        pop temp
+        ret
 
 ; Escreve caractere/dado no LCD (dado em temp)
 lcd_write_data:
     push temp2
-    ldi temp2, 0x09 ; RS = 1, BL = 1 (luz de fundo ligada)
+    ldi temp2, 0b1001 ; RS = 1, BL = 1 (luz de fundo ligada)
     rcall lcd_write_byte
     pop temp2
     ret
@@ -70,13 +70,13 @@ lcd_write_nibble:
     
     ; Envia com EN = 1
     push temp
-    ori temp, 0x04 ; ativa EN
+    ori temp, 0b100 ; ativa EN
     rcall i2c_write_byte
     pop temp
     
     ; Envia com EN = 0 para registrar o dado
     push temp
-    andi temp, ~0x04 ; desativa EN
+    andi temp, ~0b100 ; desativa EN
     rcall i2c_write_byte
     pop temp
     
@@ -96,26 +96,27 @@ LCD_Init:
     rcall delay_ms
 
     ; Sequência de inicialização de 4 bits para o HD44780
+    ; Serve para resetar o LCD, independente do seu estado anterior
     ; Envia nibble 0x30 (modo de 8 bits)
-    ldi temp, 0x30 | 0x08 ; BL = 1
+    ldi temp, 0b00110000| 0b1000 ; BL = 1
     rcall lcd_write_nibble
     ldi temp, 5
     rcall delay_ms ; espera mais de 4.1ms
 
     ; Repete o envio de 0x30
-    ldi temp, 0x30 | 0x08
+    ldi temp, 0b00110000 | 0b1000
     rcall lcd_write_nibble
     ldi temp, 1
     rcall delay_ms ; espera mais de 100us
 
     ; Repete mais uma vez o envio de 0x30
-    ldi temp, 0x30 | 0x08
+    ldi temp, 0b00110000 | 0b1000
     rcall lcd_write_nibble
     ldi temp, 1
     rcall delay_ms
 
     ; Envia nibble 0x20 para mudar para modo de 4 bits
-    ldi temp, 0x20 | 0x08
+    ldi temp, 0b00100000 | 0x08
     rcall lcd_write_nibble
     ldi temp, 1
     rcall delay_ms
@@ -166,16 +167,16 @@ lcd_write_cmd:
     push temp
     push temp2
     ldi temp, 5
-lcd_cmd_delay_outer:
-    ldi temp2, 50
-lcd_cmd_delay_inner:
-    dec temp2
-    brne lcd_cmd_delay_inner
-    dec temp
-    brne lcd_cmd_delay_outer
-    pop temp2
-    pop temp
-    ret
+    lcd_cmd_delay_outer:
+        ldi temp2, 50
+    lcd_cmd_delay_inner:
+        dec temp2
+        brne lcd_cmd_delay_inner
+        dec temp
+        brne lcd_cmd_delay_outer
+        pop temp2
+        pop temp
+        ret
 
 ; Escreve caractere/dado no LCD (caractere em temp)
 lcd_write_data:
@@ -247,13 +248,13 @@ LCD_Set_Cursor:
     breq cursor_line0
     ldi temp, 0xC0 ; linha 1
     rjmp cursor_add_col
-cursor_line0:
-    ldi temp, 0x80 ; linha 0
-cursor_add_col:
-    add temp, temp2
-    rcall lcd_write_cmd
-    pop temp
-    ret
+    cursor_line0:
+        ldi temp, 0x80 ; linha 0
+    cursor_add_col:
+        add temp, temp2
+        rcall lcd_write_cmd
+        pop temp
+        ret
 
 ; Imprime string terminada em zero da Flash apontada por Z
 LCD_Print_Msg:
@@ -262,8 +263,8 @@ LCD_Print_Msg:
     breq lcd_print_ret
     rcall lcd_write_data
     rjmp LCD_Print_Msg
-lcd_print_ret:
-    ret
+    lcd_print_ret:
+        ret
 
 ; Imprime inteiro sem sinal de 16 bits (r24:r25) com supressão de zeros à esquerda
 LCD_Print_Dec16:
@@ -281,100 +282,100 @@ LCD_Print_Dec16:
     ldi r20, 0 ; acumulador de dígitos
     ldi r24, low(10000)
     ldi r25, high(10000)
-div_10k:
-    cp r22, r24
-    cpc r23, r25
-    brlo print_10k
-    sub r22, r24
-    sbc r23, r25
-    inc r20
-    rjmp div_10k
-print_10k:
-    tst r20
-    breq skip_10k
-    subi r20, -'0'
-    mov temp, r20
-    rcall lcd_write_data
-    ldi r21, 1 ; flag: imprimiu primeiro dígito
-    rjmp check_1k
-skip_10k:
-    ldi r21, 0 ; flag: nenhum dígito impresso ainda
-    
-check_1k:
-    ldi r20, 0
-    ldi r24, low(1000)
-    ldi r25, high(1000)
-div_1k:
-    cp r22, r24
-    cpc r23, r25
-    brlo print_1k
-    sub r22, r24
-    sbc r23, r25
-    inc r20
-    rjmp div_1k
-print_1k:
-    tst r20
-    brne print_1k_digit
-    tst r21
-    breq skip_1k
-print_1k_digit:
-    subi r20, -'0'
-    mov temp, r20
-    rcall lcd_write_data
-    ldi r21, 1
-skip_1k:
+    div_10k:
+        cp r22, r24
+        cpc r23, r25
+        brlo print_10k
+        sub r22, r24
+        sbc r23, r25
+        inc r20
+        rjmp div_10k
+    print_10k:
+        tst r20
+        breq skip_10k
+        subi r20, -'0'
+        mov temp, r20
+        rcall lcd_write_data
+        ldi r21, 1 ; flag: imprimiu primeiro dígito
+        rjmp check_1k
+    skip_10k:
+        ldi r21, 0 ; flag: nenhum dígito impresso ainda
+        
+    check_1k:
+        ldi r20, 0
+        ldi r24, low(1000)
+        ldi r25, high(1000)
+    div_1k:
+        cp r22, r24
+        cpc r23, r25
+        brlo print_1k
+        sub r22, r24
+        sbc r23, r25
+        inc r20
+        rjmp div_1k
+    print_1k:
+        tst r20
+        brne print_1k_digit
+        tst r21
+        breq skip_1k
+    print_1k_digit:
+        subi r20, -'0'
+        mov temp, r20
+        rcall lcd_write_data
+        ldi r21, 1
+    skip_1k:
 
-    ; Casa dos 100
-    ldi r20, 0
-div_100:
-    cpi r22, 100
-    ldi temp, 0
-    cpc r23, temp
-    brlo print_100
-    subi r22, 100
-    sbci r23, 0
-    inc r20
-    rjmp div_100
-print_100:
-    tst r20
-    brne print_100_digit
-    tst r21
-    breq skip_100
-print_100_digit:
-    subi r20, -'0'
-    mov temp, r20
-    rcall lcd_write_data
-    ldi r21, 1
-skip_100:
+        ; Casa dos 100
+        ldi r20, 0
+    div_100:
+        cpi r22, 100
+        ldi temp, 0
+        cpc r23, temp
+        brlo print_100
+        subi r22, 100
+        sbci r23, 0
+        inc r20
+        rjmp div_100
+    print_100:
+        tst r20
+        brne print_100_digit
+        tst r21
+        breq skip_100
+    print_100_digit:
+        subi r20, -'0'
+        mov temp, r20
+        rcall lcd_write_data
+        ldi r21, 1
+    skip_100:
 
-    ; Casa dos 10
-    ldi r20, 0
-div_10:
-    cpi r22, 10
-    brlo print_10
-    subi r22, 10
-    inc r20
-    rjmp div_10
-print_10:
-    tst r20
-    brne print_10_digit
-    tst r21
-    breq skip_10
-print_10_digit:
-    subi r20, -'0'
-    mov temp, r20
-    rcall lcd_write_data
-skip_10:
+        ; Casa dos 10
+        ldi r20, 0
+    div_10:
+        cpi r22, 10
+        brlo print_10
+        subi r22, 10
+        inc r20
+        rjmp div_10
+    print_10:
+        tst r20
+        brne print_10_digit
+        tst r21
+        breq skip_10
+    print_10_digit:
+        subi r20, -'0'
+        mov temp, r20
+        rcall lcd_write_data
+    skip_10:
 
-    ; Casa das unidades (sempre impressa)
-    subi r22, -'0'
-    mov temp, r22
-    rcall lcd_write_data
-    
-    pop r23
-    pop r22
-    pop r21
-    pop r20
-    pop temp2
-    pop temp
-    ret
+        ; Casa das unidades (sempre impressa)
+        subi r22, -'0'
+        mov temp, r22
+        rcall lcd_write_data
+        
+        pop r23
+        pop r22
+        pop r21
+        pop r20
+        pop temp2
+        pop temp
+        ret

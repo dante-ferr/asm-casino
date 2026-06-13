@@ -13,30 +13,30 @@ Players_Init:
     ldi ZH, high(PLAYER_DATA_START)
     
     ldi r20, MAX_PLAYERS ; define o número máximo de jogadores
-players_init_loop:
-    ; Define o saldo inicial de cada jogador
-    ldi temp, high(START_BALANCE) ; parte alta do saldo inicial
-    st Z+, temp
-    ldi temp, low(START_BALANCE) ; parte baixa do saldo inicial
-    st Z+, temp
-    
-    ; Zera os bytes restantes da estrutura do jogador
-    ldi temp, PLAYER_SIZE - 2
-    ldi temp2, 0
-init_zeros_loop:
-    st Z+, temp2
-    dec temp
-    brne init_zeros_loop
-    
-    dec r20
-    brne players_init_loop
-    
-    pop r20
-    pop ZH
-    pop ZL
-    pop temp2
-    pop temp
-    ret
+    players_init_loop:
+        ; Define o saldo inicial de cada jogador
+        ldi temp, high(START_BALANCE) ; parte alta do saldo inicial
+        st Z+, temp
+        ldi temp, low(START_BALANCE) ; parte baixa do saldo inicial
+        st Z+, temp
+        
+        ; Zera os bytes restantes da estrutura do jogador
+        ldi temp, PLAYER_SIZE - 2
+        ldi temp2, 0
+    init_zeros_loop:
+        st Z+, temp2
+        dec temp
+        brne init_zeros_loop
+        
+        dec r20
+        brne players_init_loop
+        
+        pop r20
+        pop ZH
+        pop ZL
+        pop temp2
+        pop temp
+        ret
 
 ; Obtém o ponteiro SRAM para a ficha do jogador ativo
 ; Entradas:
@@ -57,17 +57,17 @@ Player_Get_Pointer:
     
     ldi r24, PLAYER_SIZE ; tamanho da estrutura de cada jogador
     clr temp2 ; limpa registrador para soma de carry
-get_ptr_loop:
-    add ZL, r24
-    adc ZH, temp2
-    dec temp
-    brne get_ptr_loop
-    
-get_ptr_done:
-    pop r24
-    pop temp2
-    pop temp
-    ret
+    get_ptr_loop:
+        add ZL, r24
+        adc ZH, temp2
+        dec temp
+        brne get_ptr_loop
+        
+    get_ptr_done:
+        pop r24
+        pop temp2
+        pop temp
+        ret
 
 ; Lê o saldo do jogador ativo
 ; Saídas:

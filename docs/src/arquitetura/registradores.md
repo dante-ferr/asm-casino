@@ -19,7 +19,13 @@ Para evitar conflitos de variáveis entre o fluxo principal do jogo e as rotinas
 * Regra: Usado para calcular dinamicamente o offset na memória SRAM onde os dados do jogador são lidos ou gravados.
 
 ### r22 (sys_flags)
-* Propósito: Flags globais de controle do sistema (como indicação de sub-modo de edição de aposta e controle de confirmação).
+* Propósito: Flags globais de controle do sistema (como indicação de sub-modo de edição de aposta e controle de confirmação). Mais especificamente:
+*   Bit 0: Serve para alternar entre SIM e VOLTAR na tela de confirmação.
+*   Bit 6 e 7: Permite escolher o Modo de Edição:
+*       Modo 0: Permite o jogador escolher a aposta (índices de 0 a 48) 
+*       Modo 1: Permite definir a quantidade de créditos que o jogador deseja apostar.
+*       Modo 2: Alterna entre as opções SIM e VOLTAR na tela de confirmação. 
+Os demais bit são inúteis.
 
 ## Ponteiros de Endereçamento Indireto
 

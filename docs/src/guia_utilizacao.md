@@ -6,8 +6,8 @@ O fluxo de execução do ASM Casino é gerenciado por uma Máquina de Estados Fi
 ## Tela de Boas-Vindas e Seleção Musical
 Ao ligar ou resetar o microcontrolador, o jogo inicia no estado de boas-vindas:
 * Display LCD: Exibe o título "Roleta Francesa".
-* Matriz de LEDs 8x8: Inicia uma animação contínua da bolinha percorrendo a borda circular da matriz.
-* Buzzer: Reproduz em loop a trilha sonora selecionada.
+* Matriz de LEDs 8x8: Inicia uma animação da bolinha percorrendo a borda circular da matriz.
+* Buzzer: Toca a trilha sonora selecionada em loop.
 * Displays de 7 Segmentos: Apresentam uma animação de rotação com um único segmento aceso girando.
 * LED RGB: Executa um efeito de transição de cores alternando o brilho suavemente.
 
@@ -25,8 +25,6 @@ Ao ligar ou resetar o microcontrolador, o jogo inicia no estado de boas-vindas:
 Nesta fase, definimos a quantidade de pessoas que irão participar da partida:
 * Matriz de LEDs: Exibe um ícone que representa um grupo de pessoas.
 * Display LCD: Apresenta a mensagem "Qtd Jogadores:" e o número de jogadores atual na linha inferior.
-* Displays de 7 Segmentos: Continuam com a animação de rotação rápida.
-* LED RGB: Continua com o efeito de fade de cores.
 
 ### Comandos Disponíveis:
 * Botão A (Voltar/Próximo): Decrementa a quantidade de jogadores (limite mínimo de 1). Caso seja menor que 1, retorna para 4.
@@ -52,9 +50,7 @@ Nesta fase, definimos a quantidade de pessoas que irão participar da partida:
 
 
 ## Configuração de Créditos
-Permite ajustar manualmente o saldo de créditos do jogador atual antes de fazer as apostas:
-* Matriz de LEDs: Exibe o ícone de um cifrão "$".
-* Display LCD: Apresenta o número do jogador e o seu saldo ajustável.
+Permite ajustar manualmente o saldo de créditos do jogador atual antes de fazer as apostas. A matriz de LEDs exibe o ícone de um cifrão "$", enquanto o display LCD apresenta o número do jogador e o seu saldo ajustável.
 
 ### Comandos Disponíveis:
 * Botão A: Subtrai 100 pontos de saldo (com limite inferior de 0).
@@ -110,7 +106,7 @@ Se pelo menos uma aposta válida tiver sido registrada, o sistema avança para a
 * Física do atrito: À medida que a animação avança, o intervalo de delay entre os passos aumenta gradualmente (de 10ms até 250ms), simulando a perda de velocidade, até o número ser sorteado. A bolinha para na posição correspondente do número sorteado pelo PRNG.
 
 
-## Resolução da Rodada e Payouts
+## Resolução da Rodada e Pagamentos
 Ao parar a roleta, o sistema calcula os resultados individuais de cada jogador sequencialmente:
 1. O display indica o número do jogador analisado na linha 0.
 2. O LED RGB mostra a cor da casa sorteada e os displays de 7 segmentos mostram o número vencedor.

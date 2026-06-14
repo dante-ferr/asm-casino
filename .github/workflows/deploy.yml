@@ -4,8 +4,8 @@ on:
   push:
     branches:
       - master
-      - docs/setup  # Adicionado temporariamente para testes
-  workflow_dispatch: # Permite rodar manualmente pela aba Actions do GitHub
+      - docs/main # Added temporarily
+  workflow_dispatch:
 
 permissions:
   contents: read

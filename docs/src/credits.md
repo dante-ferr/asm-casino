@@ -1,6 +1,6 @@
 # Créditos
 
-## André Barata ()
+## André Barata ([BarataDragon](https://github.com/BarataDragon))
 
 ## Dante Teles Ferreira ([dante-ferr](https://github.com/dante-ferr))
 

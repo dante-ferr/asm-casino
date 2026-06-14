@@ -39,7 +39,7 @@ Para remover o arquivo HEX gerado e limpar o ambiente de build, execute:
 make clean
 ```
 
-### Gravação no Hardware Físico (Upload / Update)
+### Gravação no Hardware Físico
 
 Execute o comando a seguir para compilar o código fonte com as configurações de hardware real (ativando a mochila do display LCD I2C `USE_PCF8574_BACKPACK = 1`) e injetar o firmware diretamente no Arduino Uno conectado via USB:
 
@@ -55,7 +55,7 @@ make upload PORT=/dev/ttyUSB1 BAUD=57600
 
 ---
 
-## Documentação Local (mdBook)
+## Documentação Local
 
 Caso prefira gerar ou visualizar a documentação localmente, os seguintes comandos possibilitam o uso local do `mdBook`:
 

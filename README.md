@@ -41,6 +41,20 @@ Para remover o arquivo HEX gerado e limpar o ambiente de build:
 make clean
 ```
 
+### Gravação no Hardware Físico (Upload / Update)
+
+Para compilar o código-fonte com as configurações de hardware real (ativando a mochila do display LCD I2C `USE_PCF8574_BACKPACK = 1`) e gravar o firmware diretamente no Arduino Uno conectado via USB:
+
+```bash
+make upload
+```
+
+O script do Makefile tentará detectar automaticamente a porta USB utilizada (como `/dev/ttyUSB0` ou `/dev/ttyACM0`). Se necessário, você pode especificar manualmente a porta e a taxa de transmissão:
+
+```bash
+make upload PORT=/dev/ttyUSB1 BAUD=57600
+```
+
 ---
 
 ## ⚙️ Documentação Local (mdBook)

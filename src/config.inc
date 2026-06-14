@@ -141,7 +141,7 @@
 ; Define SimulIDE (display ST7032) como 0
 ; Define hardware real (display PCF8574) como 1
 .ifndef USE_PCF8574_BACKPACK
-.equ USE_PCF8574_BACKPACK = 1
+.define USE_PCF8574_BACKPACK 1
 .endif
 
 .if USE_PCF8574_BACKPACK == 1

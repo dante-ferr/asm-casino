@@ -2,18 +2,10 @@
 
 Para evitar conflitos de variáveis entre o fluxo principal do jogo e as rotinas de serviço de interrupção (ISRs), adotamos uma regra fixa para o uso dos 32 registradores de uso geral do ATmega328P, garantindo que os dados não sejam sobrescritos por acidente.
 
-## Registradores Temporários
-
-### r16 (temp) e r17 (temp2)
-* Propósito: Armazenamento local de curto prazo, operações lógicas e aritméticas com valores imediatos (ldi, andi, ori), e controle de contadores de loops locais.
-* Regra: Qualquer subrotina pode alterar livremente temp e temp2 sem precisar preservar seus estados na pilha. Portanto, seus valores não são garantidos após a chamada de um call ou rcall.
-
 ## Passagem de Parâmetros e Retorno
 
-### r24 (argument) e r25 (argument_h)
-* Propósito: Transferência de argumentos para as subrotinas e retorno de resultados.
-  * Para dados de 8 bits, utilizamos o r24.
-  * Para dados de 16 bits, utilizamos o par r25:r24 (onde r25 tem o byte mais significativo - MSB, e r24 o menos significativo - LSB).
+### r25:r4. r16(temp) e r17 (temp2)
+* Propósito: Transferência de argumentos para as subrotinas e retorno de resultados. Geralmente, utilizou-se temp e temp2 como argumentos quando eles representavam coisas em 8 bits e r25:r24 para informações de 16 bits.
 * Exemplo: LCD_Print_Dec16 recebe o valor de 16 bits que está em r25:r24. Player_Get_Balance retorna o saldo em r25:r24.
 
 ## Variáveis Globais de Estado (FSM e Controle)

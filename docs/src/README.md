@@ -24,3 +24,14 @@ A documentação do livro está organizada de forma modular para cobrir os princ
 O circuito do projeto foi completamente modelado no SimulIDE e pode ser aberto através do arquivo localizado em [circuit/FrenchRoulette.sim1](file:///home/dante/Code/projects/asm-casino/circuit/FrenchRoulette.sim1).
 
 Uma representação visual dele pode ser vista [na página sobre mapeamento](./arquitetura/mapeamento.md).
+
+---
+
+## Referências usadas para estudo
+1. Microcontrolador ATmega328P MICROCHIP TECHNOLOGY INC. ATmega48A/PA/88A/PA/168A/PA/328/P Data Sheet Complete. Chandler: Microchip Technology Inc., 2018. Disponível em: https://ww1.microchip.com/downloads/en/DeviceDoc/ATmega48A-PA-88A-PA-168A-PA-328-P-DS-DS40002061A.pdf. 
+2. Controlador de Matriz de LEDs (MAX7219) ANALOG DEVICES. MAX7219/MAX7221: Serially Interfaced, 8-Digit LED Display Drivers. Norwood: Analog Devices. Disponível em: https://www.analog.com/media/en/technical-documentation/data-sheets/MAX7219-MAX7221.pdf.
+3. Controlador de Display LCD (HD44780) HITACHI. HD44780U (LCD-II): Dot Matrix Liquid Crystal Display Controller/Driver. Tóquio: Hitachi. Disponível em: https://www.sparkfun.com/datasheets/LCD/HD44780.pdf. 
+4. Módulo Expansor I2C do LCD (PCF8574) TEXAS INSTRUMENTS. PCF8574 Remote 8-Bit I/O Expander for I2C Bus. Dallas: Texas Instruments. Disponível em: https://www.ti.com/lit/ds/symlink/pcf8574.pdf. 
+5. Especificação Oficial do Protocolo I2C NXP SEMICONDUCTORS. I2C-bus specification and user manual. Eindhoven: NXP Semiconductors. Disponível em: https://www.nxp.com/docs/en/user-guide/UM10204.pdf. 
+6. Material Complementar sobre PWM SPARKFUN ELECTRONICS. Pulse Width Modulation. Niwot: SparkFun Electronics. Disponível em: https://learn.sparkfun.com/tutorials/pulse-width-modulation/all.
+

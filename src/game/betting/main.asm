@@ -66,81 +66,81 @@ Run_Choose_Cat:
     target_loop_jmp:
         rjmp betting_phase_loop
 
-    handle_mode_value:
-        cpi temp, 2 ; Botão B -> incrementa valor (+100)
-        brne value_check_b
-        
-        ; Lê o saldo do jogador em r19:r18
-        call Player_Get_Balance ; retorna saldo em r25:r24
-        mov r18, r24
-        mov r19, r25 ; r19:r18 = saldo
-        
-        ; Lê o valor da aposta atual em r25:r24
-        call Player_Get_Pointer ; Z aponta para o jogador
-        ldd r25, Z+5
-        ldd r24, Z+6 ; valor atual da aposta
-        
-        ; Se a aposta atual for maior ou igual ao saldo, impede o incremento
-        cp r24, r18
-        cpc r25, r19
-        brsh value_tick_beep ; bipe de erro se já atingiu o saldo
-        
-        ; Adiciona o passo de aposta
-        ldi temp2, low(BET_STEP)
-        add r24, temp2
-        ldi temp2, high(BET_STEP)
-        adc r25, temp2
-        
-        ; Verifica se ultrapassa o saldo
-        cp r18, r24
-        cpc r19, r25
-        brsh value_save_new ; saldo >= aposta -> salva
-        
-        ; Caso ultrapasse, limita ao valor do saldo
-        mov r24, r18
-        mov r25, r19
-        
-    value_save_new:
-        call Player_Get_Pointer
-        std Z+5, r25
-        std Z+6, r24
-        rjmp betting_phase_tick
+handle_mode_value:
+    cpi temp, 2 ; Botão B -> incrementa valor (+100)
+    brne value_check_a
+    
+    ; Lê o saldo do jogador em r19:r18
+    call Player_Get_Balance ; retorna saldo em r25:r24
+    mov r18, r24
+    mov r19, r25 ; r19:r18 = saldo
+    
+    ; Lê o valor da aposta atual em r25:r24
+    call Player_Get_Pointer ; Z aponta para o jogador
+    ldd r25, Z+5
+    ldd r24, Z+6 ; valor atual da aposta
+    
+    ; Se a aposta atual for maior ou igual ao saldo, impede o incremento
+    cp r24, r18
+    cpc r25, r19
+    brsh value_tick_beep ; bipe de erro se já atingiu o saldo
+    
+    ; Adiciona o passo de aposta
+    ldi temp2, low(BET_STEP)
+    add r24, temp2
+    ldi temp2, high(BET_STEP)
+    adc r25, temp2
+    
+    ; Verifica se ultrapassa o saldo
+    cp r18, r24
+    cpc r19, r25
+    brsh value_save_new ; saldo >= aposta -> salva
+    
+    ; Caso ultrapasse, limita ao valor do saldo
+    mov r24, r18
+    mov r25, r19
+    
+value_save_new:
+    call Player_Get_Pointer
+    std Z+5, r25
+    std Z+6, r24
+    rjmp betting_phase_tick
 
     value_tick_beep:
         call Buzzer_Failure
         rjmp betting_phase_loop
 
-    value_check_b:
-        cpi temp, 1 ; Botão A -> decrementa valor (-100)
-        brne value_check_select
-        
-        call Player_Get_Pointer
-        ldd r25, Z+5
-        ldd r24, Z+6
-        
-        ; Se o valor for 0, impede o decremento
-        mov temp2, r24
-        or temp2, r25
-        breq value_tick_beep
-        
-        ; Subtrai o passo de aposta
-        ldi temp2, low(BET_STEP)
-        sub r24, temp2
-        ldi temp2, high(BET_STEP)
-        sbc r25, temp2
-        
-        call Player_Get_Pointer
-        std Z+5, r25
-        std Z+6, r24
-        rjmp betting_phase_tick
-        
-    value_check_select:
-        cpi temp, 3 ; Botão Select -> transiciona para o Modo 2 (Confirmar)
-        brne value_loop_jmp
-        
-        call Buzzer_Beep
-        ldi sys_flags, 2 ; define o modo como 2
-        rjmp betting_phase_tick
+value_check_a:
+    cpi temp, 1 ; Botão A -> decrementa valor (-100)
+    brne value_check_select
+    
+    call Player_Get_Pointer
+    ldd r25, Z+5
+    ldd r24, Z+6
+    
+    ; Se o valor for 0, impede o decremento
+    mov temp2, r24
+    or temp2, r25
+    breq value_tick_beep
+    
+    ; Subtrai o passo de aposta
+    ldi temp2, low(BET_STEP)
+    sub r24, temp2
+    ldi temp2, high(BET_STEP)
+    sbc r25, temp2
+    
+    call Player_Get_Pointer
+    std Z+5, r25
+    std Z+6, r24
+    rjmp betting_phase_tick
+    
+value_check_select:
+    cpi temp, 3 ; Botão Select -> transiciona para o Modo 2 (Confirmar)
+    brne value_loop_jmp
+    
+    call Buzzer_Beep
+    ldi sys_flags, 2 ; define o modo como 2
+    rjmp betting_phase_tick
 
     value_loop_jmp:
         rjmp betting_phase_loop

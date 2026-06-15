@@ -91,5 +91,5 @@ Caso o jogador ativo possua o bit de restrição de prisão ativado em seu byte 
 | 11 | "3a COLUNA" | Alinhamento vertical 3 |
 
 ## Apostas
-Como o sistema tem o saldo dos jogadores em 16 bits e o valor de retorno pode causar overflow (como a aposta em número), logo foi feito foi feita um monitoramento da flag carry através de brcc nas rotinas de pagamento de rules.asm:
+Como o sistema tem o saldo dos jogadores em 16 bits e o valor de retorno pode causar overflow (como a aposta em número), logo foi feito um monitoramento da flag carry através de brcc nas rotinas de pagamento de rules.asm:
     Se houver carry, o valor é fixado para o limite máximo de 16 bits, 0xFFFF (65.535) pela rotina payout_clamp_max.

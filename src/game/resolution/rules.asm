@@ -223,7 +223,7 @@ resolution_done:
 ; Entradas:
 ;   r20 = número sorteado (0-36)
 ;   temp = tipo de aposta (0 = Interna, 1 = Externa)
-;   temp2 = alvo da aposta (número 0-36 ou categoria 0-5)
+;   temp2 = alvo da aposta (número 0-36 ou categoria 0-11)
 ; Saídas:
 ;   temp = 1 se ganhar, 0 se perder
 Check_Bet_Win:

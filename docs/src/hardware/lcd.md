@@ -62,3 +62,6 @@ Imprime, caractere a caractere, uma mensagem no registrador Z, terminando após 
 ### LCD_Print_Dec16 (r25:r24 = número a ser impresso)
 Realiza uma série de operações para imprimir um número com supressão de zeros à esquerda (assim, 100 não poderá ser visto como 0100).
 
+## Sobre a flag USE_PCF8574_BACKPACK
+Como o LCD do SimulIDE difere do físico (incompatíveis), logo há a flag USE_PCF8574_BACKPACK para selecionar o trecho de código na hora de compilar. Até aqui, foi documentado as funções referentes ao circuito _físico_.
+A diferença é que, no LCD do SimulIDE, é primeiro enviado o byte de controle e depois o de dados (ou seja, não há comunicação nibble a nibble como no hardware real)

@@ -35,7 +35,6 @@ Os endereços de memória que vêm logo depois do quarto jogador são usados par
 | Endereço SRAM | Nome da Constante | Tamanho | Descrição |
 | :---: | :--- | :---: | :--- |
 | 0x0140 | RAM_ROUND_NUM | 1 byte | Número sorteado na rodada atual ou passo da animação no display. |
-| 0x0141 | RAM_GLOB_HIST | 5 bytes | Histórico geral da mesa (últimos 5 números sorteados). |
 | 0x0146 | RAM_SEED_L | 1 byte | Parte baixa da semente do gerador de números aleatórios. |
 | 0x0147 | RAM_SEED_H | 1 byte | Parte alta da semente do gerador de números aleatórios. |
 | 0x0148 | RAM_SYS_TICKS | 1 byte | Contador de milissegundos para controle de tempo geral. |

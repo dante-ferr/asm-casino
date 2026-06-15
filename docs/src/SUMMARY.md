@@ -23,9 +23,12 @@
     - [Buzzer (Áudio e Música)](hardware/buzzer.md)
 
 - [Subsistemas e Regras do Jogo]()
+    - [Gerenciamento de Jogadores](jogo/jogadores.md)
     - [Gerador Aleatório (PRNG)](jogo/prng.md)
     - [Interface de Menus](jogo/menus.md)
     - [Fase de Apostas](jogo/apostas.md)
+    - [Giro e Resolução da Roleta](jogo/resolucao.md)
+    - [Músicas](jogo/musicas.md)
 
 - [Materiais e Créditos]()
     - [Materiais](./materials.md)

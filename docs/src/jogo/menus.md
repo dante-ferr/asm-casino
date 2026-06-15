@@ -35,8 +35,8 @@ Os arquivos que controlam as transições de tela estão localizados em src/game
 * Funcionamento:
   1. Executa Show_Num_Players_Menu para atualizar os periféricos.
   2. Aguarda até que um botão seja pressionado:
-     * Botão A (Modificar): Incrementa a variável global de controle RAM_NUM_PLAYERS respeitando o limite mínimo de 1 e máximo de 4 jogadores, voltando para 1 caso o limite seja ultrapassado. Manda um clique sonoro de retorno e atualiza o LCD.
-     * Botão B (Modificar): Decrementa o contador RAM_NUM_PLAYERS, voltando para 4 caso decresça abaixo de 1 jogador. Dispara o som de retorno e atualiza o display.
+     * Botão B (Modificar): Incrementa a variável global de controle RAM_NUM_PLAYERS respeitando o limite mínimo de 1 e máximo de 4 jogadores, voltando para 1 caso o limite seja ultrapassado. Manda um clique sonoro de retorno e atualiza o LCD.
+     * Botão A (Modificar): Decrementa o contador RAM_NUM_PLAYERS, voltando para 4 caso decresça abaixo de 1 jogador. Dispara o som de retorno e atualiza o display.
      * Botão Select (Confirmar): Salva o valor final na SRAM, emite o sinal sonoro de confirmação e muda a tela do jogo atual para STATE_MAIN_MENU.
 
 ### Menu de Consulta dos Jogadores (STATE_MAIN_MENU)

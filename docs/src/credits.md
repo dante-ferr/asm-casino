@@ -6,6 +6,7 @@ Obs: as contribuições relacionadas ao repositório podem ser observadas com ma
 - Documentação do funcionamento de parte do código do jogo.
 - Montagem do circuito físico.
 - Pagamento de parcela do custo dos materiais.
+- Participação secundária na elaboração dos slides.
 
 ## Dante Teles Ferreira ([dante-ferr](https://github.com/dante-ferr))
 - Elaboração de ideias para o jogo e o circuito.
@@ -17,12 +18,14 @@ Obs: as contribuições relacionadas ao repositório podem ser observadas com ma
 - Desenvolvimento de partes do código do jogo
 - Montagem do circuito físico.
 - Pagamento de parcela do custo dos materiais.
+- Participação secundária na elaboração dos slides.
 
 ## Guilherme Souza d'Afonseca ([GuiSouza1309](https://github.com/GuiSouza1309))
 - Desenvolvimento do circuito no SimulIDE.
 - Documentação do funcionamento de parte do código do jogo.
 - Montagem do circuito físico.
 - Pagamento de parcela do custo dos materiais.
+- Participação secundária na elaboração dos slides.
 
 ## Paulo Ravazzano ([Johannesgauss](https://github.com/Johannesgauss))
 - Elaboração de ideias para o jogo e o circuito.

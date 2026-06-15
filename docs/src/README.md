@@ -21,9 +21,16 @@ A documentação do livro está organizada de forma modular para cobrir os princ
 
 ## Diagrama do Circuito Virtual
 
-O circuito do projeto foi completamente modelado no SimulIDE e pode ser aberto através do arquivo localizado em [circuit/FrenchRoulette.sim1](file:///home/dante/Code/projects/asm-casino/circuit/FrenchRoulette.sim1).
+O circuito do projeto foi completamente modelado no SimulIDE e pode ser aberto através do arquivo localizado em [circuit/FrenchRoulette.sim1](../../circuit/FrenchRoulette.sim1).
 
 Uma representação visual dele pode ser vista [na página sobre mapeamento](./arquitetura/mapeamento.md).
+
+---
+
+## Galeria
+
+![Interface do Jogo](./assets/jogo-interface.jpg)
+![Circuito](./assets/circuito.png)
 
 ---
 

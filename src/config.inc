@@ -140,9 +140,6 @@
 ; Seleção do ambiente de hardware
 ; Define SimulIDE (display ST7032) como 0
 ; Define hardware real (display PCF8574) como 1
-.ifndef USE_PCF8574_BACKPACK
-.define USE_PCF8574_BACKPACK 1
-.endif
 
 .if USE_PCF8574_BACKPACK == 1
 .equ LCD_I2C_ADDR              = 0x4E ; Endereço do PCF8574 (0x27 deslocado para esquerda = 0x4E)
